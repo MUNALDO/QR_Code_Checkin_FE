@@ -5,7 +5,8 @@ module.exports = {
 	},
 	"extends": [
 		"eslint:recommended",
-		"plugin:react/recommended"
+		"plugin:react/recommended",
+		"plugin:prettier/recommended"
 	],
 	"overrides": [
 		{
@@ -28,17 +29,10 @@ module.exports = {
 		"react"
 	],
 	"rules": {
+		"react/react-in-jsx-scope": "off",
 		"indent": [
-			"error",
+			"warn",
 			"tab"
-		],
-		"linebreak-style": [
-			"error",
-			"unix"
-		],
-		"quotes": [
-			"error",
-			"double"
 		],
 		"semi": [
 			"error",
