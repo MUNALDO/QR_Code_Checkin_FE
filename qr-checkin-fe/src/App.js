@@ -1,9 +1,13 @@
 import 'assets/css/App.css';
 import Router from 'router';
+import { Navigation } from 'components';
 
 function App() {
   return (
-    <Router />
+    <>
+      <Navigation />
+      <Router />
+    </>
   );
 }
 
