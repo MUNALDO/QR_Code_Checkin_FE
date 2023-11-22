@@ -3,7 +3,7 @@ function Employee() {
 
     return (
         <>
-            <h1>This is Employee</h1>
+            <h1 className="ml-[260px]">This is Employee</h1>
         </>
     );
 }
