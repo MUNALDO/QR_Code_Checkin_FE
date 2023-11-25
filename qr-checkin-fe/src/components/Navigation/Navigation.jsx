@@ -5,7 +5,7 @@ import './Navigation.css';
 
 const Navigation = () => {
     const [sidebar, setSidebar] = useState(false);
-
+    const [ employeeMenu, setEmployeeMenu] = useState(false);
     const toggleSidebar = () => setSidebar(!sidebar);
 
     return (
@@ -31,14 +31,37 @@ const Navigation = () => {
                             </h4>
                         </li>
                     </Link>
-                    <Link to="employee">
+                    <div onClick={() => setEmployeeMenu(!employeeMenu)}>
                         <li className="nav-item mb-3 p-2 rounded">
                             <i class="bi bi-people-fill"></i>
                             <h4 className={sidebar ? "navName" : "navName fullsize"} >
-                                Employee
+                                Employee Management
                             </h4>
                         </li>
-                    </Link>
+                        {employeeMenu && (<ul className="flex flex-col gap-3 list-none">
+                            <li>
+                                <Link className="tags" to="employee">
+                                    <div className="item-sub-menu">
+                                        <div className="item-title">All employees</div>
+                                    </div>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link className="tags" to="employee/departments">
+                                    <div className="item-sub-menu">
+                                        <div className="item-title">Departments</div>
+                                    </div>
+                                </Link>
+                            </li>
+                            <li>
+                                <Link className="tags" to="employee/position">
+                                    <div className="item-sub-menu">
+                                        <div className="item-title">Position</div>
+                                    </div>
+                                </Link>
+                            </li>
+                        </ul>)}
+                    </div>
                     <Link to="attendance">
                         <li className="nav-item mb-3 p-2 rounded">
                             <i class="bi bi-calendar-check"></i>
