@@ -5,8 +5,8 @@ import { Navigation } from 'components';
 function App() {
   return (
     <>
-      <Navigation />
-      <Router />
+        <Navigation />
+        <Router />
     </>
   );
 }
