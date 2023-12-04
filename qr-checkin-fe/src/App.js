@@ -1,13 +1,14 @@
 import 'assets/css/App.css';
 import Router from 'router';
 import { Navigation } from 'components';
+import { AuthContextProvider } from 'context/AuthContext';
 
 function App() {
   return (
-    <>
-        <Navigation />
-        <Router />
-    </>
+    <AuthContextProvider>
+      <Navigation />
+      <Router />
+    </AuthContextProvider>
   );
 }
 
