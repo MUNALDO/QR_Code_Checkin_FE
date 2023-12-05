@@ -1,27 +1,30 @@
 export const positionList = [
     {
-        postition: "employee",
+        name: "Service",
     },
     {
-        postition: "employee",
+        name: "Bar",
     },
     {
-        postition: "employee",
+        name: "Küche",
     },
     {
-        postition: "employee",
+        name: "Lito",
     },
     {
-        postition: "employee",
+        name: "Autofahrer",
     },
     {
-        postition: "employee",
+        name: "Fahrradfahrer",
     },
     {
-        postition: "employee",
+        name: "Büro",
     },
     {
-        postition: "employee",
+        name: "Lehrgang für Azubi",
+    },
+    {
+        name: "FacTech GmbH",
     }
 ]
 
@@ -57,3 +60,27 @@ export const departmentList = [
         department: "IT"
     },
 ]
+
+export const genderList = [
+    {
+        name: "Male",
+    },
+    {
+        name: "Female",
+    },
+    {
+        name: "Other",
+    }
+]
+
+export const roleList = [
+    {
+        name: "Inhaber",
+    },
+    {
+        name:"Manager",
+    },
+    {
+        name:"Employee"
+    }
+];

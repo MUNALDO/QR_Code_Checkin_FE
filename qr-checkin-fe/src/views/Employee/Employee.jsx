@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { positionList, departmentList } from "assets/data/data";
+import { positionList } from "assets/data/data";
+import { roleList } from "assets/data/data";
 import EmployeeItem from "./EmployeeItem";
 import "./Employee.css"
 import axios from "axios";
@@ -9,18 +10,157 @@ function Employee() {
     document.title = "Employee";
     const [selectedPosition, setSelectedPosition] = useState("Select Position")
     const [selectedDepartment, setSelectedDepartment] = useState("Select Department")
+    const [selectedRole, setSelectedRole] = useState("Select Role")
+
     const [positionMenu, setPositionMenu] = useState(false)
     const [departmentMenu, setDepartmentMenu] = useState(false)
+    const [roleMenu, setRoleMenu] = useState(false)
+
+    const [addEmployee, setAddEmployee] = useState(false)
+
+    const [loading, setLoading] = useState(false);
     const [userList, setUserList] = useState([])
+
+    const [departmentList, setDepartmentList] = useState()
+
+    const [selectedDepartmentEmployee, setSelectedDepartmentEmployee] = useState('');
+    const [selectedPositionEmployee, setSelectedPositionEmployee] = useState('');
+    const [selectedRoleUser, setSelectedRoleUser] = useState('');
+
     const [inputSearch, setInputSearch] = useState("");
+
+    const [positionFormMenuState, setPositionFormMenuState] = useState(false)
+
+    const [formData, setFormData] = useState({
+        user: {
+            id: '',
+            name: '',
+            password: '',
+            email: '',
+        },
+    });
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setFormData((prevData) => ({
+            user: {
+                ...prevData.user,
+                [name]: value,
+            },
+        }));
+    };
+
+    const userString = localStorage.getItem('user');
+    const userObject = userString ? JSON.parse(userString) : null;
+    console.log(userObject);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        setLoading(true);
+
+        // ----------------------------------------------------------------CREATE BY ADMIN ---------------------------------------------------------------- //
+
+        //CREATE EMPLOYEE BY ADMIN
+        if (userObject.role === 'Admin' && selectedRoleUser === 'Employee') {
+            try {
+                const { data } = await axios.post(
+                    "https://qr-code-checkin.vercel.app/api/auth/manage-admin/register-employee",
+                    {
+                        id: formData.user.id,
+                        name: formData.user.name,
+                        password: formData.user.password,
+                        email: formData.user.email,
+                        department_name: selectedDepartmentEmployee,
+                        role: "Employee",
+                        position: selectedPositionEmployee,
+                    },
+                    { withCredentials: true }
+                );
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+            } catch (error) {
+                // Handle error
+                console.error("Error submitting form:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        //CREATE INHABER BY ADMIN
+        if (userObject.role === 'Admin' && selectedRoleUser === 'Inhaber') {
+            try {
+                const { data } = await axios.post(
+                    "https://qr-code-checkin.vercel.app/api/auth/manage-admin/register-inhaber",
+                    {
+                        id: formData.user.id,
+                        name: formData.user.name,
+                        password: formData.user.password,
+                        email: formData.user.email,
+                        department_name: selectedDepartmentEmployee,
+                        role: "Inhaber",
+                        // position: selectedPositionEmployee,
+                    },
+                    { withCredentials: true }
+                );
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+            } catch (error) {
+                // Handle error
+                console.error("Error submitting form:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        //CREATE MANAGER BY ADMIN
+        if (userObject.role === 'Admin' && selectedRole === 'Manager') {
+            try {
+                const { data } = await axios.post(
+                    "https://qr-code-checkin.vercel.app/api/auth/manage-admin/register-manager",
+                    {
+                        id: formData.user.id,
+                        name: formData.user.name,
+                        password: formData.user.password,
+                        email: formData.user.email,
+                        department_name: selectedDepartmentEmployee,
+                        role: "Manager",
+                        // position: selectedPositionEmployee,
+                    },
+                    { withCredentials: true }
+                );
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+            } catch (error) {
+                // Handle error
+                console.error("Error submitting form:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+
     const handlePositionMenu = () => {
         setPositionMenu(!positionMenu)
         setDepartmentMenu(false)
+        setRoleMenu(false)
+
     }
 
     const handleDepartmetnnMenu = () => {
         setDepartmentMenu(!departmentMenu)
         setPositionMenu(false)
+        setRoleMenu(false)
+    }
+
+    const handleRoleMenu = () => {
+        setRoleMenu(!roleMenu)
+        setPositionMenu(false)
+        setDepartmentMenu(false)
     }
 
     const handleChangeSelectedPosition = (item) => {
@@ -31,40 +171,98 @@ function Employee() {
         setSelectedDepartment(item)
     }
 
-    const handleSeacrh = async () => {
-        try {
-            const response = await axios.get('https://qr-code-checkin.vercel.app/api/admin/manage-employee/get-employee-specific',{
-                params: {
-                    query: inputSearch,
-                },
-            });
-            // console.log(response.data.message);
-            setUserList(response.data.message);
-        } catch (error) {
-            console.error('Error fetching data:', error);
+    const handleChangeSelectedRole = (item) => {
+        setSelectedRole(item)
+    }
+
+    const SeacrhTyoe = async (query) => {
+        if (userObject.role === 'Admin') {
+            try {
+                const response = await axios.get(`https://qr-code-checkin.vercel.app/api/admin/manage-employee/get-specific?query=${query}`, { withCredentials: true });
+                console.log(query);
+                setUserList(response.data.message);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
         }
     };
+
+    const handleSeacrh = () => {
+        if (inputSearch !== "" && selectedPosition === "Select Position" && selectedDepartment === "Select Department" && selectedRole === "Select Role") {
+            SeacrhTyoe(inputSearch)
+        }
+        if (inputSearch === "" && selectedPosition !== "Select Position" && selectedDepartment === "Select Department" && selectedRole === "Select Role") {
+            SeacrhTyoe(selectedPosition)
+        }
+        if (inputSearch === "" && selectedPosition === "Select Position" && selectedDepartment !== "Select Department" && selectedRole === "Select Role") {
+            SeacrhTyoe(selectedDepartment)
+        }
+        if (inputSearch === "" && selectedPosition === "Select Position" && selectedDepartment === "Select Department" && selectedRole !== "Select Role") {
+            SeacrhTyoe(selectedRole)
+        }
+        setTimeout(() => {
+            setSelectedDepartment("Select Department")
+            setSelectedRole("Select Role")
+            setSelectedPosition("Select Position")
+        }, 2000);
+    }
 
     useEffect(() => {
         const getAllUsers = async () => {
             try {
-                const response = await axios.get('https://qr-code-checkin.vercel.app/api/admin/manage-employee/get-employee-specific');
-                // console.log(response.data.message);
-                setUserList(response.data.message);
+                if (userObject.role === 'Admin') {
+                    const response = await axios.get('https://qr-code-checkin.vercel.app/api/admin/manage-employee/get-all', { withCredentials: true });
+                    setUserList(response.data.message);
+                }
+                if (userObject.role === 'Inhaber') {
+                    // console.log("sdfs");
+                    const response = await axios.get('https://qr-code-checkin.vercel.app/api/inhaber/manage-employee/get-all',
+                        {
+                            inhaber_name: userObject.name
+                        }
+                        ,{ withCredentials: true }
+                    );
+                    setUserList(response.data.message);
+                }
+                if (userObject.role === 'Manager') {
+                    const response = await axios.get('https://qr-code-checkin.vercel.app/api/admin/manage-employee/get-all', {
+                        manager_name: userObject.name
+                    },{ withCredentials: true });
+                    setUserList(response.data.message);
+                }
+
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        if (selectedRoleUser === "Employee") {
+            setPositionFormMenuState(true)
+        }
+
+        if (selectedRoleUser !== "Employee") {
+            setPositionFormMenuState(false)
+
+        }
+
+        const getAllDepartments = async () => {
+            try {
+                const response = await axios.get('https://qr-code-checkin.vercel.app/api/admin/manage-department/get-all', { withCredentials: true });
+                setDepartmentList(response.data);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
         };
         getAllUsers();
-    }, []);
-
+        getAllDepartments()
+    }, [selectedRoleUser, userObject?.role, userObject?.name]);
 
     if (userList) {
         console.log(userList);
     }
     return (
         <>
-            <div className="ml-[260px] h-auto p-5 flex flex-col font-Changa text-textColor gap-5">
+            <div className="relative ml-[260px] h-auto p-5 flex flex-col font-Changa text-textColor gap-5">
                 <div className="flex flex-row items-center justify-between">
                     <div>
                         <h1 className="font-bold text-3xl">Employees</h1>
@@ -74,24 +272,45 @@ function Employee() {
                         </div>
                     </div>
                     <div className="flex flex-row px-4 gap-4">
-                        <a href="employee/add-employee" target="__blanket" className="bg-buttonColor1 text-white text-base flex flex-row gap-1 justify-center items-center border border-solid p-2 rounded-md hover:bg-cyan-800">
+                        <button onClick={() => setAddEmployee(!addEmployee)} className="bg-buttonColor1 text-white text-base flex flex-row gap-1 justify-center items-center border border-solid p-2 rounded-md hover:bg-cyan-800">
                             <svg style={{ width: '14px', height: '16px' }} aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" class="svg-inline--fa fa-plus " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path></svg>
                             Add Employee
-                        </a>
+                        </button>
                         <button className="bg-buttonColor1 text-white text-base flex flex-row gap-1 justify-center items-center border border-solid p-2 rounded-md hover:bg-cyan-800">
                             <svg style={{ width: '14px', height: '16px' }} aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" class="svg-inline--fa fa-plus " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path></svg>
                             Export File
                         </button>
                     </div>
                 </div>
+
+                {/* //---------------------------------------------------------------- SEARCH ----------------------------------------------------------------// */}
                 <div className="z-10 flex flex-row mt-10 justify-between h-[50px]">
                     <input
-                        className="w-1/3 text-base px-4 py-3 placeholder:text-placeholderTextColor focus:border-2 focus:border-solid focus:border-placeholderTextColor focus:ring-0"
+                        className="w-1/4 text-base px-4 py-3 placeholder:text-placeholderTextColor focus:border-2 focus:border-solid focus:border-placeholderTextColor focus:ring-0"
                         type="text"
                         placeholder="Search by name, ID"
                         value={inputSearch}
                         onChange={(e) => setInputSearch(e.target.value)}
                     />
+                    <div
+                        onClick={handleRoleMenu}
+                        className="w-1/6 h-[50px] text-base cursor-pointer">
+                        <div className="flex flex-col w-full py-3 px-2 border border-solid border-placeholderTextColor text-placeholderTextColor">
+                            <div className="flex flex-row items-center justify-around w-full">
+                                <div className="ml-4">{selectedRole}</div>
+                                <div className={`w-4 h-4 flex justify-center items-center ${roleMenu ? "rotate-180" : ""}`}>
+                                    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="caret-down" class="svg-inline--fa fa-caret-down fa-rotate-180 " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512" style={{ color: "rgb(220, 220, 220)" }}><path fill="currentColor" d="M137.4 374.6c12.5 12.5 32.8 12.5 45.3 0l128-128c9.2-9.2 11.9-22.9 6.9-34.9s-16.6-19.8-29.6-19.8L32 192c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9l128 128z"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        {roleMenu && (<div className="text-black bg-placeholderTextColor border border-solid border-placeholderTextColor border-t-black flex flex-col gap-3 px-2 py-3 items-center w-full overflow-y-scroll max-h-[200px]">
+                            {roleList.map(({ index, name }) => {
+                                return <div onClick={() => handleChangeSelectedRole(name)} className="py-1">{name}</div>
+                            })}
+                        </div>)}
+                    </div>
+
                     <div
                         onClick={handleDepartmetnnMenu}
                         className="w-1/6 h-[50px] text-base cursor-pointer">
@@ -104,9 +323,9 @@ function Employee() {
                             </div>
                         </div>
 
-                        {departmentMenu && (<div className="text-placeholderTextColor border border-solid border-placeholderTextColor border-t-white flex flex-col gap-3 px-2 py-3 justify-center items-center w-full overflow-y-scroll max-h-[200px]">
-                            {departmentList.map(({ index, department }) => {
-                                return <div onClick={() => handleChangeSelectedDepartment(department)} className="py-1">{department}</div>
+                        {departmentMenu && (<div className="text-black bg-placeholderTextColor border border-solid border-placeholderTextColor border-t-black flex flex-col gap-3 px-2 py-3 items-center w-full overflow-y-scroll max-h-[200px]">
+                            {departmentList.map(({ index, name }) => {
+                                return <div onClick={() => handleChangeSelectedDepartment(name)} className="py-1">{name}</div>
                             })}
                         </div>)}
                     </div>
@@ -123,18 +342,20 @@ function Employee() {
                             </div>
                         </div>
 
-                        {positionMenu && (<div className="z-10 text-placeholderTextColor border border-solid border-placeholderTextColor border-t-white flex flex-col gap-3 px-2 py-3 justify-center items-center w-full overflow-y-scroll max-h-[200px]">
-                            {positionList.map(({ index, postition }) => {
-                                return <div onClick={() => handleChangeSelectedPosition(postition)} className="py-1">{postition}</div>
+                        {positionMenu && (<div className=" text-black bg-placeholderTextColor border border-solid border-placeholderTextColor border-t-black flex flex-col gap-3 px-2 py-3 items-center w-full overflow-y-scroll max-h-[200px]">
+                            {positionList.map(({ index, name }) => {
+                                return <div onClick={() => handleChangeSelectedPosition(name)} className="py-1">{name}</div>
                             })}
                         </div>)}
                     </div>
-                    <div 
-                    onClick={handleSeacrh}
-                     className="bg-buttonColor2 text-white text-base flex flex-row gap-1 justify-center items-center border border-solid p-2 rounded-md cursor-pointer hover:bg-emerald-700 w-1/6">
+                    <div
+                        onClick={handleSeacrh}
+                        className="bg-buttonColor2 text-white text-base flex flex-row gap-1 justify-center items-center border border-solid p-2 rounded-md cursor-pointer hover:bg-emerald-700 w-1/6">
                         <button className="search-btn">Seacrh</button>
                     </div>
                 </div>
+
+                {/* //---------------------------------------------------------------- USER LIST ----------------------------------------------------------------// */}
                 <div className="block w-full text-base font-Changa mt-5 overflow-y-scroll overflow-x-scroll">
                     <table className="w-full table">
                         <thead className="">
@@ -155,10 +376,10 @@ function Employee() {
                                     <span className="table-title-role">Role</span>
                                 </th>
                                 <th className="p-2 text-left">
-                                    <span className="table-title-status">Status</span>
+                                    <span className="table-title-role">Position</span>
                                 </th>
                                 <th className="p-2 text-left">
-                                    <span className="table-title-action">Action</span>
+                                    <span className="table-title-status">Status</span>
                                 </th>
                             </tr>
                         </thead>
@@ -166,7 +387,7 @@ function Employee() {
                             <div className="no-result-text">NO RESULT</div>
                         ) : (
                             <tbody className="tbody">
-                                {userList?.map(({ id, name, email, status, department_name, role }) => (
+                                {userList?.map(({ id, name, email, status, department_name, role, position }) => (
                                     <EmployeeItem
                                         key={id}
                                         name={name}
@@ -175,12 +396,161 @@ function Employee() {
                                         status={status}
                                         department_name={department_name}
                                         role={role}
+                                        position={position}
                                     />
                                 ))}
                             </tbody>
                         )}
                     </table>
                 </div>
+
+                {/* add Employee */}
+                {addEmployee && (<div className="fixed top-0 bottom-0 right-0 left-0 z-20 font-Changa">
+                    <div
+                        onClick={() => setAddEmployee(false)}
+                        className="absolute top-0 bottom-0 right-0 left-0 bg-[rgba(0,0,0,.45)] cursor-pointer"></div>
+                    <div className="absolute w-[500px] top-0 right-0 bottom-0 z-30 bg-white">
+                        <div className="w-full h-full">
+                            <div className="flex flex-col mt-8">
+                                <div className="flex flex-row justify-between px-8 items-center">
+                                    <div className="font-bold text-xl">Crete Employee</div>
+                                    <div
+                                        onClick={() => setAddEmployee(false)}
+                                        className="text-lg border border-solid border-[rgba(0,0,0,.45)] py-1 px-3 rounded-full cursor-pointer">x</div>
+                                </div>
+                                <div className="w-full border border-solid border-t-[rgba(0,0,0,.45)] mt-4"></div>
+                                <div className="flex flex-col px-8 w-full mt-7">
+                                    <form
+                                        className="flex flex-col gap-6 w-full justify-center items-center"
+                                        onSubmit={handleSubmit}>
+                                        {loading && (<div className="absolute flex w-full h-full items-center justify-center">
+                                            <div className="loader"></div>
+                                        </div>)}
+                                        <div className="w-full h-auto flex flex-col gap-2">
+                                            <div className="flex flex-row gap-2">
+                                                <span className="text-rose-500">*</span>
+                                                <span className="">Employee's ID</span>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                name="id"
+                                                required
+                                                value={formData.user.id}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                        <div className="w-full h-auto flex flex-col gap-2">
+                                            <div className="flex flex-row gap-2">
+                                                <span className="text-rose-500">*</span>
+                                                <span className="">Name</span>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                name="name"
+                                                required
+                                                value={formData.user.name}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                        <div className="w-full h-auto flex flex-col gap-2">
+                                            <div className="flex flex-row gap-2">
+                                                <span className="text-rose-500">*</span>
+                                                <span className="">Password</span>
+                                            </div>
+                                            <input
+                                                type="text"
+                                                name="password"
+                                                required
+                                                value={formData.user.password}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                        <div className="w-full h-auto flex flex-col gap-2">
+                                            <div className="flex flex-row gap-2">
+                                                <span className="text-rose-500">*</span>
+                                                <span className="">Email</span>
+                                            </div>
+                                            <input
+                                                type="email"
+                                                name="email"
+                                                required
+                                                value={formData.user.email}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                        <div className="w-full flex flex-col gap-2">
+                                            <div className="flex flex-row gap-2">
+                                                <span className="text-rose-500">*</span>
+                                                <span className="">Department</span>
+                                            </div>
+                                            <select
+                                                id="department"
+                                                name="department"
+                                                className="w-full cursor-pointer"
+                                                value={selectedDepartmentEmployee}
+                                                onChange={(e) => setSelectedDepartmentEmployee(e.target.value)}
+                                                required
+                                            >
+                                                <option value="" disabled className='italic text-sm'>Select Department*</option>
+                                                {departmentList?.map((item, index) => (
+                                                    <option className='text-sm text-textColor w-full' key={index} value={item.name}>
+                                                        {item.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="w-full flex flex-col gap-2">
+                                            <div className="flex flex-row gap-2">
+                                                <span className="text-rose-500">*</span>
+                                                <span className="">Role</span>
+                                            </div>
+                                            <select
+                                                id="role"
+                                                name="role"
+                                                className="w-full cursor-pointer"
+                                                value={selectedRoleUser}
+                                                onChange={(e) => setSelectedRoleUser(e.target.value)}
+                                                required
+                                            >
+                                                <option value="" disabled className='italic text-sm'>Select Role*</option>
+                                                {roleList?.map((item, index) => (
+                                                    <option className='text-sm text-textColor w-full' key={index} value={item.name}>
+                                                        {item.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        {positionFormMenuState && (<div className="w-full flex flex-col gap-2">
+                                            <div className="flex flex-row gap-2">
+                                                <span className="text-rose-500">*</span>
+                                                <span className="">Postion</span>
+                                            </div>
+                                            <select
+                                                id="position"
+                                                name="position"
+                                                className="w-full cursor-pointer"
+                                                value={selectedPositionEmployee}
+                                                onChange={(e) => setSelectedPositionEmployee(e.target.value)}
+                                                required
+                                            >
+                                                <option value="" disabled className='italic text-sm'>Select Position*</option>
+                                                {positionList?.map((item, index) => (
+                                                    <option className='text-sm text-textColor w-full' key={index} value={item.postition}>
+                                                        {item.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>)}
+                                        <div
+                                            className=" bg-buttonColor2 text-white text-base flex flex-row gap-1 justify-center items-center border border-solid py-3 rounded-md cursor-pointer hover:bg-emerald-700 w-full">
+                                            <button type="submit" className="w-full">Add</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>)}
             </div>
         </>
     );
