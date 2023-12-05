@@ -16,7 +16,7 @@ const ScheduleTable = (props) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get(`https://qr-code-checkin.vercel.app/api/admin/manage-employee/get-specific?query=${id}`, { withCredentials: true });
+                const response = await axios.get(`https://qr-code-checkin.vercel.app/api/admin/manage-date-design/get-all?employeeID=${id}`, { withCredentials: true });
                 setEmployeeData(response.data);
             } catch (error) {
                 console.error("Error fetching employee data:", error);
@@ -29,8 +29,34 @@ const ScheduleTable = (props) => {
     console.log(employeeData);
 
     const renderTileContent = ({ date }) => {
-        if (!employeeData || !employeeData.message.schedules) return null;
-        
+        if (!employeeData || !employeeData.message) return null;
+
+        const formattedDate = date.toLocaleDateString("en-US", {
+            day: "numeric",
+            month: "numeric",
+            year: "numeric",
+        });
+
+        const shiftCodesForDate = employeeData.message
+        .filter((schedule) => {
+          const scheduleDate = new Date(schedule.date);
+          return scheduleDate.toDateString() === date.toDateString();
+        })
+        .map((schedule) => schedule.shift_design.map((shift) => shift.shift_code))
+        .flat();
+  
+      return (
+        <div className={`calendar-tile ${shiftCodesForDate.length > 0 ? "scheduled" : ""}`}>
+          {/* You can customize the content of the tile here */}
+          {shiftCodesForDate.length > 0 ? (
+            shiftCodesForDate.map((shiftCode, index) => (
+              <div key={index}>{shiftCode}</div>
+            ))
+          ) : (
+            <div></div>
+          )}
+        </div>
+      );
     };
 
     const handleMonthChange = (date) => {
