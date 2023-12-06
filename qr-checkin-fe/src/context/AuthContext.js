@@ -1,4 +1,4 @@
-import { createContext, useEffect, useReducer } from "react";
+/* import { createContext, useEffect, useReducer } from "react";
 
 const INITIAL_STATE = {
     user: JSON.parse(localStorage.getItem("user")) || null,
@@ -79,4 +79,20 @@ export const AuthContextProvider = ({ children }) => {
             {children}
         </AuthContext.Provider>
     );
-};
+}; */
+
+import { createContext, useState } from "react";
+
+const AuthContext = createContext({});
+
+export const AuthProvider = ({ children }) => {
+    const [auth, setAuth] = useState({});
+
+    return (
+        <AuthContext.Provider value={{ auth, setAuth }}>
+            {children}
+        </AuthContext.Provider>
+    )
+}
+
+export default AuthContext;

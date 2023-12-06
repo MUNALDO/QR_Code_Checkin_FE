@@ -10,6 +10,8 @@ import WorkingSchedule from "views/Attendance/WorkingSchedule/WorkingSchedule";
 // import AddEmployee from "views/Employee/AddEmployee/AddEmployee";
 import Login from "views/Login/Login";
 // import { AuthContextProvider } from "context/AuthContext";
+import Layout from "components/Layout";
+import RequireAuth from "components/RequireAuth";
 const titles = {
     '/': 'QR Checkin',
     '/attendance': 'Attendance',
@@ -26,15 +28,27 @@ const Router = () => {
     return (
         // <AuthContextProvider>
         <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="attendance" element={<Attendance />} />
-            <Route path="employee" element={<Employee />} />
-            <Route path="employee/departments" element={<Department />} />
-            <Route path="employee/position" element={<Position />} />
-            <Route path="employee/view-profile/:id" element={<ProfileEmployee />} />
-            <Route path="working-schedule" element={<WorkingSchedule />} />
-            {/* <Route path="employee/add-employee" element={<AddEmployee />} /> */}
-            <Route path="login" element={<Login />} />
+            <Route path="/" element={<Layout />} >
+                {/* public routes */}
+                <Route path="login" element={<Login />} />
+                <Route path="unauthorized" element />
+
+                {/* protected routes */}
+                <Route element={<RequireAuth />} >
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="attendance" element={<Attendance />} />
+                    <Route path="employee" element={<Employee />} />
+                    <Route path="employee/departments" element={<Department />} />
+                    <Route path="employee/position" element={<Position />} />
+                    <Route path="employee/view-profile/:id" element={<ProfileEmployee />} />
+                    <Route path="working-schedule" element={<WorkingSchedule />} />
+                    {/* <Route path="employee/add-employee" element={<AddEmployee />} /> */}
+                </Route>
+
+                {/* missing route */}
+                <Route path="*" element />
+
+            </Route>
         </Routes>
 
         // </AuthContextProvider>
