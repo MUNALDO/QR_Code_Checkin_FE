@@ -6,11 +6,6 @@ import useAuth from "hooks/useAuth";
 const Login = () => {
     document.title = "Login";
 
-    // const [credentials, setCredentials] = useState({
-    //     name: undefined,
-    //     password: undefined,
-    // });
-
     const { setAuth } = useAuth();
 
     const navigate = useNavigate();
@@ -46,9 +41,9 @@ const Login = () => {
                     withCredentials: true
                 }, 
             );
-            const accessToken = res?.data?.accessToken;
+            // const accessToken = res?.accessToken;
             const role = res?.data?.details?.role;
-            setAuth({ name, password, role, accessToken });
+            setAuth({ name, password, role });
             setUser('');
             setPwd('');
             navigate(from, { replace: true });
