@@ -1,78 +1,104 @@
 import axios from "axios";
-import { useRef, useState, useEffect } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import useAuth from "hooks/useAuth";
+import { useContext, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 
 const Login = () => {
     document.title = "Login";
 
-    // const [credentials, setCredentials] = useState({
-    //     name: undefined,
-    //     password: undefined,
-    // });
+    const [credentials, setCredentials] = useState({
+        name: undefined,
+        password: undefined,
+    });
 
-    const { setAuth } = useAuth();
+    // const { setAuth } = useAuth();
 
+    // const navigate = useNavigate();
+    // const location = useLocation();
+    // const from = location.state?.from?.pathname || "/";
+
+    // const userRef = useRef();
+    // const errRef = useRef();
+
+    // const [name, setUser] = useState('');
+    // const [password, setPwd] = useState('');
+    // const [errMsg, setErrMsg] = useState('');
+
+    // useEffect(() => {
+    //     userRef.current.focus();
+    // }, []);
+
+    // useEffect(() => {
+    //     setErrMsg('');
+    // }, [name, password]);
+
+    // // Organize for clean code
+    // const handleLogin = async (e) => {
+    //     e.preventDefault();
+
+    //     try {
+    //         debugger;
+    //         const res = await axios.post(
+    //             "https://qr-code-checkin.vercel.app/api/auth/manage-admin/login-admin", 
+    //             JSON.stringify({ name, password }),
+    //             {
+    //                 headers: { 'Content-Type': 'application/json' },
+    //                 withCredentials: true
+    //             }, 
+    //         );
+    //         const accessToken = res?.data?.accessToken;
+    //         const role = res?.data?.details?.role;
+    //         setAuth({ name, password, role, accessToken });
+    //         setUser('');
+    //         setPwd('');
+    //         navigate(from, { replace: true });
+    //     } catch (err) {
+    //         console.log(err);
+    //         if (!err?.res) {
+    //             setErrMsg('No Server Response');
+    //         } else if (err.res?.status === 400) {
+    //             setErrMsg('Missing Username or Password');
+    //         } else if (err.res?.status === 401) {
+    //             setErrMsg('Unauthorized');
+    //         } else {
+    //             setErrMsg('Login Failed');
+    //         }
+    //         // errRef.current.focus();
+    //     }finally{
+    //         navigate("/")
+    //     }
+    // };
+
+    const { loading, error, dispatch } = useContext(AuthContext);
     const navigate = useNavigate();
-    const location = useLocation();
-    const from = location.state?.from?.pathname || "/";
 
-    const userRef = useRef();
-    const errRef = useRef();
+    const handleInput = (e) => {
+        // debugger;
+        setCredentials((prev) => ({ ...prev, [e.target.id]: e.target.value }));
+    };
 
-    const [name, setUser] = useState('');
-    const [password, setPwd] = useState('');
-    const [errMsg, setErrMsg] = useState('');
-
-    useEffect(() => {
-        userRef.current.focus();
-    }, []);
-
-    useEffect(() => {
-        setErrMsg('');
-    }, [name, password]);
-
-    // Organize for clean code
     const handleLogin = async (e) => {
+        // debugger;
         e.preventDefault();
-
+        dispatch({ type: "LOGIN_START" });
         try {
-            debugger;
-            const res = await axios.post(
-                "https://qr-code-checkin.vercel.app/api/auth/manage-admin/login-admin", 
-                JSON.stringify({ name, password }),
-                {
-                    headers: { 'Content-Type': 'application/json' },
-                    withCredentials: true
-                }, 
-            );
-            const accessToken = res?.data?.accessToken;
-            const role = res?.data?.details?.role;
-            setAuth({ name, password, role, accessToken });
-            setUser('');
-            setPwd('');
-            navigate(from, { replace: true });
+            const res = await axios.post("https://qr-code-checkin.vercel.app/api/auth/manage-admin/login-admin", credentials, { withCredentials: true });
+            if (res?.data?.details?.name) {
+                dispatch({ type: "LOGIN_SUCCESS", payload: res.data.details });
+                navigate("/employee");
+            }
         } catch (err) {
             console.log(err);
-            if (!err?.res) {
-                setErrMsg('No Server Response');
-            } else if (err.res?.status === 400) {
-                setErrMsg('Missing Username or Password');
-            } else if (err.res?.status === 401) {
-                setErrMsg('Unauthorized');
-            } else {
-                setErrMsg('Login Failed');
-            }
-            // errRef.current.focus();
+            dispatch({ type: "LOGIN_FAILURE", payload: "errr" });
         }
-    };
+    }
 
     return (
         <>
             <div className="relative flex flex-col justify-center min-h-screen overflow-hidden">
                 <div className="w-full p-6 m-auto bg-white rounded-md shadow-md lg:max-w-xl">
                     <h1 className="text-3xl font-semibold text-center text-purple-700 underline">
-                    Sign in
+                        Sign in
                     </h1>
                     <form className="mt-6">
                         <div className="mb-2">
@@ -82,13 +108,9 @@ const Login = () => {
                                 Username
                             </label>
                             <input
+                                id="name"
+                                onChange={handleInput}
                                 type="text"
-                                id="username"
-                                ref={userRef}
-                                autoComplete="off"
-                                onChange={(e) => setUser(e.target.value)}
-                                value={name}
-                                required
                                 className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
                             />
                         </div>
@@ -99,11 +121,9 @@ const Login = () => {
                                 Password
                             </label>
                             <input
-                                type="password"
                                 id="password"
-                                onChange={(e) => setPwd(e.target.value)}
-                                value={password}
-                                required
+                                onChange={handleInput}
+                                type="password"
                                 className="block w-full px-4 py-2 mt-2 text-purple-700 bg-white border rounded-md focus:border-purple-400 focus:ring-purple-300 focus:outline-none focus:ring focus:ring-opacity-40"
                             />
                         </div>
@@ -115,7 +135,7 @@ const Login = () => {
                         </a>
                         <div className="mt-6">
                             <button
-                                onClick={ handleLogin } 
+                                onClick={handleLogin}
                                 className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-200 transform bg-purple-700 rounded-md hover:bg-purple-600 focus:outline-none focus:bg-purple-600"
                             >
                                 Login
@@ -142,3 +162,4 @@ const Login = () => {
 }
 
 export default Login;
+

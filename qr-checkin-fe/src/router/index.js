@@ -7,6 +7,7 @@ import Department from "views/Employee/Department/Department";
 import Position from "views/Position/Position";
 import ProfileEmployee from "views/ProfileEmployee/ProfileEmployee";
 import WorkingSchedule from "views/Attendance/WorkingSchedule/WorkingSchedule";
+import DayOffManagement from "views/Attendance/DayOffManagement/DayOffManagement";
 // import AddEmployee from "views/Employee/AddEmployee/AddEmployee";
 import Login from "views/Login/Login";
 // import { AuthContextProvider } from "context/AuthContext";
@@ -28,30 +29,17 @@ const Router = () => {
     return (
         // <AuthContextProvider>
         <Routes>
-            <Route path="/" element={<Layout />} >
-                {/* public routes */}
-                <Route path="login" element={<Login />} />
-                <Route path="unauthorized" element />
-
-                {/* protected routes */}
-                <Route element={<RequireAuth />} >
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="attendance" element={<Attendance />} />
-                    <Route path="employee" element={<Employee />} />
-                    <Route path="employee/departments" element={<Department />} />
-                    <Route path="employee/position" element={<Position />} />
-                    <Route path="employee/view-profile/:id" element={<ProfileEmployee />} />
-                    <Route path="working-schedule" element={<WorkingSchedule />} />
-                    {/* <Route path="employee/add-employee" element={<AddEmployee />} /> */}
-                </Route>
-
-                {/* missing route */}
-                <Route path="*" element />
-
-            </Route>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="attendance" element={<Attendance />} />
+            <Route path="employee" element={<Employee />} />
+            <Route path="employee/departments" element={<Department />} />
+            <Route path="employee/position" element={<Position />} />
+            <Route path="employee/view-profile/:id" element={<ProfileEmployee />} />
+            <Route path="working-schedule" element={<WorkingSchedule />} />
+            <Route path="working-schedule/day-off-management" element={<DayOffManagement />} />
+            {/* <Route path="employee/add-employee" element={<AddEmployee />} /> */}
+            <Route path="login" element={<Login />} />
         </Routes>
-
-        // </AuthContextProvider>
     );
 };
 
