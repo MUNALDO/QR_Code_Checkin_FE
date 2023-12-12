@@ -19,6 +19,15 @@ const Login = () => {
     const [password, setPwd] = useState('');
     const [errMsg, setErrMsg] = useState('');
 
+    let baseApiUrl = "https://qr-code-checkin.vercel.app/api/auth/";
+    const [selectedRole, setSelectedRole] = useState('admin');
+
+    const handleRoleChange = (event) => {
+        setSelectedRole(event.target.value);
+    };
+
+
+
     useEffect(() => {
         userRef.current.focus();
     }, []);
@@ -32,9 +41,9 @@ const Login = () => {
         e.preventDefault();
 
         try {
-            debugger;
+            const loginUrl = `${baseApiUrl}manage-${selectedRole}/login-${selectedRole}`;
             const res = await axios.post(
-                "https://qr-code-checkin.vercel.app/api/auth/manage-admin/login-admin", 
+                loginUrl, 
                 JSON.stringify({ name, password }),
                 {
                     headers: { 'Content-Type': 'application/json' },
@@ -108,6 +117,51 @@ const Login = () => {
                         >
                             Forget Password?
                         </a>
+                        <div className="mb-2">
+                            <input id="admin" name="role" value="admin"
+                                type="radio" className="text-purple-500 m-2"
+                                checked={selectedRole === 'admin'} 
+                                onChange={handleRoleChange}
+                            />
+                            <label htmlFor="admin"
+                                className="text-sm font-semibold text-gray-800"
+                            >
+                                Admin
+                            </label>
+
+                            <input id="inhaber" name="role" value="inhaber"
+                                type="radio" className="text-purple-500 m-2" 
+                                checked={selectedRole === 'inhaber'} 
+                                onChange={handleRoleChange}
+                            />
+                            <label htmlFor="inhaber"
+                                className="text-sm font-semibold text-gray-800"
+                            >
+                                Inhaber
+                            </label>
+
+                            <input id="manager" name="role" value="manager"
+                                type="radio" className="text-purple-500 m-2" 
+                                checked={selectedRole === 'manager'} 
+                                onChange={handleRoleChange}
+                            />
+                            <label htmlFor="manager"
+                                className="text-sm font-semibold text-gray-800"
+                            >
+                                Manager
+                            </label>
+
+                            <input id="employee" name="role" value="employee"
+                                type="radio" className="text-purple-500 m-2" 
+                                checked={selectedRole === 'employee'} 
+                                onChange={handleRoleChange}
+                            />
+                            <label htmlFor="employee"
+                                className="text-sm font-semibold text-gray-800"
+                            >
+                                Employee
+                            </label>
+                        </div>
                         <div className="mt-6">
                             <button
                                 onClick={ handleLogin } 
