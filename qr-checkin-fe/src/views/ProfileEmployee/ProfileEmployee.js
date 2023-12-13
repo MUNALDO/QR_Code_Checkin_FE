@@ -167,7 +167,7 @@ const ProfileEmployee = () => {
                             setScheduleState(true)
                             setProfileState(false)
                         }}
-                        className={`hover:text-buttonColor1 cursor-pointer ${scheduleState ? "text-buttonColor1 underline decoration-buttonColor1" : ""}`}>Schedule</div>
+                        className={`hover:text-buttonColor1 cursor-pointer ${scheduleState ? "text-buttonColor1 underline decoration-buttonColor1" : ""}`}>Schedule's Calendar</div>
                 </div>
             </div>
             {user?.map((index, item) =>
@@ -387,7 +387,7 @@ const ProfileEmployee = () => {
                             </form>
                         </div>
                     </div>)}
-                    {scheduleState && <ScheduleTable id={id} />}
+                    {scheduleState && <ScheduleTable id={id} name={editingData.name} department={editingData.department} role={editingData.role} position={editingData.position} />}
                 </div>
             )}
         </div>
