@@ -13,10 +13,20 @@ import Login from "views/Login/Login";
 // import { AuthContextProvider } from "context/AuthContext";
 import Layout from "components/Layout";
 import RequireAuth from "components/RequireAuth";
+import Unauthorized from "components/Unauthorized";
+import Missing from "components/Missing";
+
 const titles = {
     '/': 'QR Checkin',
     '/attendance': 'Attendance',
     '/employee': 'Employee',
+}
+
+const ROLES = {
+    'Admin': 'Admin',
+    'Inhaber': 'Inhaber',
+    'Manager': 'Manager',
+    'Employee': 'Employee',
 }
 
 
@@ -27,18 +37,28 @@ const Router = () => {
     //     [location],
     // )  
     return (
-        // <AuthContextProvider>
         <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="attendance" element={<Attendance />} />
-            <Route path="employee" element={<Employee />} />
-            <Route path="employee/departments" element={<Department />} />
-            <Route path="employee/position" element={<Position />} />
-            <Route path="employee/view-profile/:id" element={<ProfileEmployee />} />
-            <Route path="working-schedule" element={<WorkingSchedule />} />
-            <Route path="working-schedule/day-off-management" element={<DayOffManagement />} />
-            {/* <Route path="employee/add-employee" element={<AddEmployee />} /> */}
-            <Route path="login" element={<Login />} />
+            <Route path="/" element={<Layout />} >
+                {/* public routes */}
+                <Route path="login" element={<Login />} />
+                <Route path="unauthorized" element={<Unauthorized />} />
+
+                {/* protected routes */}
+                {/* <Route element={<RequireAuth allowedRoles={[ROLES.Admin, ROLES.Inhaber]}/>} > */}
+                    <Route path="/" element={<Dashboard />} />
+                    <Route path="attendance" element={<Attendance />} />
+                    <Route path="employee" element={<Employee />} />
+                    <Route path="employee/departments" element={<Department />} />
+                    <Route path="employee/position" element={<Position />} />
+                    <Route path="employee/view-profile/:id" element={<ProfileEmployee />} />
+                    <Route path="working-schedule" element={<WorkingSchedule />} />
+                    {/* <Route path="employee/add-employee" element={<AddEmployee />} /> */}
+                {/* </Route> */}
+
+                {/* missing route */}
+                <Route path="*" element={<Missing />} />
+
+            </Route>
         </Routes>
     );
 };

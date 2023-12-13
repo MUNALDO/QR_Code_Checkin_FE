@@ -6,12 +6,7 @@ import { AuthContext } from "../../context/AuthContext";
 const Login = () => {
     document.title = "Login";
 
-    const [credentials, setCredentials] = useState({
-        name: undefined,
-        password: undefined,
-    });
-
-    // const { setAuth } = useAuth();
+    const { setAuth } = useAuth();
 
     // const navigate = useNavigate();
     // const location = useLocation();
@@ -36,38 +31,20 @@ const Login = () => {
     // const handleLogin = async (e) => {
     //     e.preventDefault();
 
-    //     try {
-    //         debugger;
-    //         const res = await axios.post(
-    //             "https://qr-code-checkin.vercel.app/api/auth/manage-admin/login-admin", 
-    //             JSON.stringify({ name, password }),
-    //             {
-    //                 headers: { 'Content-Type': 'application/json' },
-    //                 withCredentials: true
-    //             }, 
-    //         );
-    //         const accessToken = res?.data?.accessToken;
-    //         const role = res?.data?.details?.role;
-    //         setAuth({ name, password, role, accessToken });
-    //         setUser('');
-    //         setPwd('');
-    //         navigate(from, { replace: true });
-    //     } catch (err) {
-    //         console.log(err);
-    //         if (!err?.res) {
-    //             setErrMsg('No Server Response');
-    //         } else if (err.res?.status === 400) {
-    //             setErrMsg('Missing Username or Password');
-    //         } else if (err.res?.status === 401) {
-    //             setErrMsg('Unauthorized');
-    //         } else {
-    //             setErrMsg('Login Failed');
-    //         }
-    //         // errRef.current.focus();
-    //     }finally{
-    //         navigate("/")
-    //     }
-    // };
+
+    let baseApiUrl = "https://qr-code-checkin.vercel.app/api/auth/";
+    const [selectedRole, setSelectedRole] = useState('admin');
+
+    const handleRoleChange = (event) => {
+        setSelectedRole(event.target.value);
+    };
+
+
+
+    useEffect(() => {
+        userRef.current.focus();
+    }, []);
+
 
     const { loading, error, dispatch } = useContext(AuthContext);
     const navigate = useNavigate();
@@ -82,11 +59,22 @@ const Login = () => {
         e.preventDefault();
         dispatch({ type: "LOGIN_START" });
         try {
-            const res = await axios.post("https://qr-code-checkin.vercel.app/api/auth/manage-admin/login-admin", credentials, { withCredentials: true });
-            if (res?.data?.details?.name) {
-                dispatch({ type: "LOGIN_SUCCESS", payload: res.data.details });
-                navigate("/employee");
-            }
+
+            const loginUrl = `${baseApiUrl}manage-${selectedRole}/login-${selectedRole}`;
+            const res = await axios.post(
+                loginUrl, 
+                JSON.stringify({ name, password }),
+                {
+                    headers: { 'Content-Type': 'application/json' },
+                    withCredentials: true
+                }, 
+            );
+            // const accessToken = res?.accessToken;
+            const role = res?.data?.details?.role;
+            setAuth({ name, password, role });
+            setUser('');
+            setPwd('');
+            navigate(from, { replace: true });
         } catch (err) {
             console.log(err);
             dispatch({ type: "LOGIN_FAILURE", payload: "errr" });
@@ -133,6 +121,51 @@ const Login = () => {
                         >
                             Forget Password?
                         </a>
+                        <div className="mb-2">
+                            <input id="admin" name="role" value="admin"
+                                type="radio" className="text-purple-500 m-2"
+                                checked={selectedRole === 'admin'} 
+                                onChange={handleRoleChange}
+                            />
+                            <label htmlFor="admin"
+                                className="text-sm font-semibold text-gray-800"
+                            >
+                                Admin
+                            </label>
+
+                            <input id="inhaber" name="role" value="inhaber"
+                                type="radio" className="text-purple-500 m-2" 
+                                checked={selectedRole === 'inhaber'} 
+                                onChange={handleRoleChange}
+                            />
+                            <label htmlFor="inhaber"
+                                className="text-sm font-semibold text-gray-800"
+                            >
+                                Inhaber
+                            </label>
+
+                            <input id="manager" name="role" value="manager"
+                                type="radio" className="text-purple-500 m-2" 
+                                checked={selectedRole === 'manager'} 
+                                onChange={handleRoleChange}
+                            />
+                            <label htmlFor="manager"
+                                className="text-sm font-semibold text-gray-800"
+                            >
+                                Manager
+                            </label>
+
+                            <input id="employee" name="role" value="employee"
+                                type="radio" className="text-purple-500 m-2" 
+                                checked={selectedRole === 'employee'} 
+                                onChange={handleRoleChange}
+                            />
+                            <label htmlFor="employee"
+                                className="text-sm font-semibold text-gray-800"
+                            >
+                                Employee
+                            </label>
+                        </div>
                         <div className="mt-6">
                             <button
                                 onClick={handleLogin}
