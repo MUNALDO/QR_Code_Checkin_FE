@@ -7,7 +7,6 @@ import Department from "views/Employee/Department/Department";
 import Position from "views/Position/Position";
 import ProfileEmployee from "views/ProfileEmployee/ProfileEmployee";
 import WorkingSchedule from "views/Attendance/WorkingSchedule/WorkingSchedule";
-import DayOffManagement from "views/Attendance/DayOffManagement/DayOffManagement";
 // import AddEmployee from "views/Employee/AddEmployee/AddEmployee";
 import Login from "views/Login/Login";
 // import { AuthContextProvider } from "context/AuthContext";
@@ -60,6 +59,7 @@ const Router = () => {
 
             </Route>
         </Routes>
+
     );
 };
 

@@ -47,7 +47,7 @@ const Navigation = () => {
                                     </div>
                                 </Link>
                             </li>
-                            {/* <li>
+                            <li>
                                 <Link className="tags" to="employee/departments">
                                     <div className="item-sub-menu">
                                         <div className="item-title">Departments</div>
@@ -60,7 +60,7 @@ const Navigation = () => {
                                         <div className="item-title">Position</div>
                                     </div>
                                 </Link>
-                            </li> */}
+                            </li>
                         </ul>)}
                     </div>
                     <div onClick={() => setAttendanceMenu(!attendanceMenu)}>
@@ -75,13 +75,6 @@ const Navigation = () => {
                                 <Link className="tags" to="working-schedule">
                                     <div className="item-sub-menu">
                                         <div className="item-title">Working Schedule</div>
-                                    </div>
-                                </Link>
-                            </li>
-                            <li>
-                                <Link className="tags" to="working-schedule/day-off-management">
-                                    <div className="item-sub-menu">
-                                        <div className="item-title">Day Off Management</div>
                                     </div>
                                 </Link>
                             </li>
