@@ -28,38 +28,6 @@ export const positionList = [
     }
 ]
 
-export const departmentList = [
-    {
-        department: "HR"
-    },
-    {
-        department: "IT"
-    },
-    {
-        department: "HR"
-    },
-    {
-        department: "IT"
-    },
-    {
-        department: "HR"
-    },
-    {
-        department: "IT"
-    },
-    {
-        department: "HR"
-    },
-    {
-        department: "IT"
-    },
-    {
-        department: "HR"
-    },
-    {
-        department: "IT"
-    },
-]
 
 export const genderList = [
     {
@@ -77,6 +45,18 @@ export const roleList = [
     {
         name: "Inhaber",
     },
+    {
+        name:"Manager",
+    },
+    {
+        name:"Employee"
+    }
+];
+
+export const roleListForInhaber = [
+    // {
+    //     name: "Inhaber",
+    // },
     {
         name:"Manager",
     },

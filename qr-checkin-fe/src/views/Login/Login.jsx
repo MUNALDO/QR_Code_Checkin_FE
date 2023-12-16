@@ -52,6 +52,9 @@ const Login = () => {
             );
             // const accessToken = res?.accessToken;
             const role = res?.data?.details?.role;
+            const userDetails = res?.data?.details;
+            
+            localStorage.setItem('user', JSON.stringify(userDetails));
             setAuth({ name, password, role });
             setUser('');
             setPwd('');
