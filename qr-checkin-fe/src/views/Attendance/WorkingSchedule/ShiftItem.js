@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
 const ShiftItem = (props) => {
-    const { id, name, code, shift_type, time_slot } = props;
+    const { id, name, code, time_slot } = props;
 
     return (
         <tr className="tr-item">
@@ -11,7 +11,6 @@ const ShiftItem = (props) => {
                 </h2>
             </td>
             <td className="p-4 text-left">{code}</td>
-            <td className="p-4">{shift_type}</td>
             <td className="p-4 flex flex-row gap-3">
                 {time_slot?.detail?.map((item, index) => (
                     <div key={index}>{item?.start_time}-{item?.end_time}</div>

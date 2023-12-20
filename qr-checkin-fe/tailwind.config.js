@@ -16,6 +16,7 @@ module.exports = {
 
       fontFamily: {
         "Changa": ["Changa"],
+        "DancingScript": ["Dancing Script"],
       },
     },
   },

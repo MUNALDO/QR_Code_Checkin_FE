@@ -6,7 +6,7 @@ import DeleteIcon from "../../assets/images/icon-delete.png"
 import ProfileIcon from "../../assets/images/icon-profile.png"
 import IconActive from "../../assets/images/icon-active.png"
 import { positionList } from "assets/data/data"
-import { roleList } from "assets/data/data"
+import { roleList, roleListForInhaber } from "assets/data/data"
 import { genderList } from "assets/data/data"
 import ScheduleTable from "./ScheduleTable"
 const ProfileEmployee = () => {
@@ -16,11 +16,20 @@ const ProfileEmployee = () => {
     const [profileState, setProfileState] = useState(true);
     const [scheduleState, setScheduleState] = useState(false);
     const [departmentList, setDepartmentList] = useState()
+    const [checkRole, setCheckRole] = useState(false)
+
+    const [checkInhaber, setCheckInhaber] = useState(false)
+    const [checkManager, setCheckManager] = useState(false)
+    const [checkAdmin, setCheckAdmin] = useState(false)
+
+    const userString = localStorage.getItem('user');
+    const userObject = userString ? JSON.parse(userString) : null;
+
     useEffect(() => {
         setLoading(true);
         const getUser = async () => {
             try {
-                const response = await axios.get(`https://qr-code-checkin.vercel.app/api/admin/manage-employee/get-specific?query=${id}`, { withCredentials: true });
+                const response = await axios.get(`https://qr-code-checkin.vercel.app/api/admin/manage-all/search-specific?details=${id}`, { withCredentials: true });
                 console.log(response.data.message);
                 setUser(response.data.message);
             } catch (error) {
@@ -41,6 +50,28 @@ const ProfileEmployee = () => {
         getAllDepartments()
     }, [id]);
 
+    useEffect(() => {
+        if (user && user[0]?.role !== "Employee") {
+            setCheckRole(false)
+        }
+
+        if (user && user[0]?.role === "Employee") {
+            setCheckRole(true)
+        }
+
+        if (userObject?.role === 'Admin') {
+            setCheckAdmin(true)
+            setCheckInhaber(false)
+            setCheckManager(false)
+        }
+
+        if (userObject?.role === 'Inhaber') {
+            setCheckAdmin(false)
+            setCheckInhaber(true)
+            setCheckManager(false)
+        }
+    }, [user, userObject?.role]);
+
 
     const [editingData, setEditingData] = useState({
         name: '',
@@ -54,6 +85,7 @@ const ProfileEmployee = () => {
         dob: '',
         address: '',
         default_total_dayOff: '',
+        house_rent_money: ''
     });
 
     const handleCancel = () => {
@@ -69,7 +101,8 @@ const ProfileEmployee = () => {
                 dob: user[0]?.dob || '',
                 address: user[0]?.address || '',
                 role: user[0]?.role || '',
-                default_total_dayOff: user[0]?.default_total_dayOff || ''
+                default_total_dayOff: user[0]?.default_total_dayOff || '',
+                house_rent_money: user[0]?.house_rent_money || '',
             });
         }
     };
@@ -87,7 +120,8 @@ const ProfileEmployee = () => {
                 gender: user[0]?.gender || '',
                 dob: user[0]?.dob || '',
                 address: user[0]?.address || '',
-                default_total_dayOff: user[0]?.default_total_dayOff || ''
+                default_total_dayOff: user[0]?.default_total_dayOff || '',
+                house_rent_money: user[0]?.house_rent_money || '',
             });
         }
     }, [user]);
@@ -103,34 +137,70 @@ const ProfileEmployee = () => {
         e.preventDefault();
 
         setLoading(true);
-        try {
-            const { data } = await axios.put(`https://qr-code-checkin.vercel.app/api/admin/manage-employee/update?employeeID=${id}`,
-                {
-                    id: editingData.id,
-                    name: editingData.name,
-                    email: editingData.email,
-                    department_name: editingData.department,
-                    role: editingData.role,
-                    position: editingData.position,
-                    status: editingData.status,
-                    dob: editingData.dateOfBirth,
-                    address: editingData.address,
-                    gender: editingData.gender,
-                    default_total_dayOff: editingData.default_total_dayOff
-                },
-                { withCredentials: true },
-            );
+
+        if (userObject?.role === "Admin") {
+            try {
+                const { data } = await axios.put(`https://qr-code-checkin.vercel.app/api/admin/manage-employee/update?employeeID=${id}`,
+                    {
+                        id: editingData.id,
+                        name: editingData.name,
+                        email: editingData.email,
+                        department_name: editingData.department,
+                        role: editingData.role,
+                        position: editingData.position,
+                        status: editingData.status,
+                        dob: editingData.dateOfBirth,
+                        address: editingData.address,
+                        gender: editingData.gender,
+                        default_total_dayOff: editingData.default_total_dayOff,
+                        house_rent_money: editingData.house_rent_money,
+                    },
+                    { withCredentials: true },
+                );
 
 
-        } catch (error) {
-            // Handle error
-            console.error("Error submitting form:", error);
-        } finally {
-            setLoading(false);
+            } catch (error) {
+                // Handle error
+                console.error("Error submitting form:", error);
+            } finally {
+                setLoading(false);
+            }
+            setTimeout(() => {
+                window.location.reload();
+            }, 2000);
         }
-        setTimeout(() => {
-            window.location.reload();
-        }, 2000);
+
+        if (userObject?.role === "Inhaber") {
+            try {
+                const { data } = await axios.put(`https://qr-code-checkin.vercel.app/api/inhaber/manage-employee/update?inhaber_name=${userObject?.name}&employeeID=${id}`,
+                    {
+                        id: editingData.id,
+                        name: editingData.name,
+                        email: editingData.email,
+                        role: editingData.role,
+                        department_name: editingData.department,
+                        position: editingData.position,
+                        status: editingData.status,
+                        dob: editingData.dateOfBirth,
+                        address: editingData.address,
+                        gender: editingData.gender,
+                        default_total_dayOff: editingData.default_total_dayOff,
+                        house_rent_money: editingData.house_rent_money
+                    },
+                    { withCredentials: true },
+                );
+
+
+            } catch (error) {
+                // Handle error
+                console.error("Error submitting form:", error);
+            } finally {
+                setLoading(false);
+            }
+            // setTimeout(() => {
+            //     window.location.reload();
+            // }, 2000);
+        }
 
     };
     return (
@@ -162,12 +232,12 @@ const ProfileEmployee = () => {
                             setProfileState(true)
                         }}
                         className={`hover:text-buttonColor1 cursor-pointer ${profileState ? "text-buttonColor1 underline decoration-buttonColor1" : ""}`}>Basic Information</div>
-                    <div
+                    {checkRole && (<div
                         onClick={() => {
                             setScheduleState(true)
                             setProfileState(false)
                         }}
-                        className={`hover:text-buttonColor1 cursor-pointer ${scheduleState ? "text-buttonColor1 underline decoration-buttonColor1" : ""}`}>Schedule</div>
+                        className={`hover:text-buttonColor1 cursor-pointer ${scheduleState ? "text-buttonColor1 underline decoration-buttonColor1" : ""}`}>Schedule's Calendar</div>)}
                 </div>
             </div>
             {user?.map((index, item) =>
@@ -186,18 +256,18 @@ const ProfileEmployee = () => {
                                     <span className="text-[#6c757d] w-1/3 text-right px-3">Name</span>
                                     <span className="w-2/3 px-2">{user[0]?.name}</span>
                                 </div>
-                                <div className="flex flex-wrap w-full items-center justify-center">
+                                {checkRole && (<div className="flex flex-wrap w-full items-center justify-center">
                                     <span className="text-[#6c757d] w-1/3 text-right px-3">Gender</span>
                                     <span className="w-2/3 px-2">{user[0]?.gender}</span>
-                                </div>
-                                <div className="flex flex-wrap w-full items-center justify-center">
+                                </div>)}
+                                {checkRole && (<div className="flex flex-wrap w-full items-center justify-center">
                                     <span className="text-[#6c757d] w-1/3 text-right px-3">Address</span>
                                     <span className="w-2/3 px-2">{user[0]?.address}</span>
-                                </div>
-                                <div className="flex flex-wrap w-full items-center justify-center">
+                                </div>)}
+                                {checkRole && (<div className="flex flex-wrap w-full items-center justify-center">
                                     <span className="text-[#6c757d] w-1/3 text-right px-3">Date of Birth</span>
                                     <span className="w-2/3 px-2">{user[0]?.dob}</span>
-                                </div>
+                                </div>)}
                                 <div className="flex flex-wrap w-full items-center justify-center">
                                     <span className="text-[#6c757d] w-1/3 text-right px-3">Email</span>
                                     <span className="w-2/3 px-2">{user[0]?.email}</span>
@@ -210,10 +280,10 @@ const ProfileEmployee = () => {
                                     <span className="text-[#6c757d] w-1/3 text-right px-3">Role</span>
                                     <span className="w-2/3 px-2">{user[0]?.role}</span>
                                 </div>
-                                <div className="flex flex-wrap w-full items-center justify-center">
+                                {checkRole && (<div className="flex flex-wrap w-full items-center justify-center">
                                     <span className="text-[#6c757d] w-1/3 text-right px-3">Position</span>
                                     <span className="w-2/3 px-2">{user[0]?.position}</span>
-                                </div>
+                                </div>)}
                             </div>
                         </div>
                     </div>)}
@@ -245,7 +315,7 @@ const ProfileEmployee = () => {
                                         onChange={handleChange}
                                     />
                                 </div>
-                                <div className="flex flex-wrap w-[600px] items-center">
+                                {checkRole && (<div className="flex flex-wrap w-[600px] items-center">
                                     <label className="w-1/4 text-right p-4" htmlFor="department">Gender:</label>
                                     <select
                                         id="gender"
@@ -263,8 +333,8 @@ const ProfileEmployee = () => {
                                             </option>
                                         ))}
                                     </select>
-                                </div>
-                                <div className="flex flex-wrap w-[600px] items-center">
+                                </div>)}
+                                {checkRole && (<div className="flex flex-wrap w-[600px] items-center">
                                     <label className="w-1/4 text-right p-4" htmlFor="dob">Date of Birth:</label>
                                     <input
                                         type="text"
@@ -274,7 +344,7 @@ const ProfileEmployee = () => {
                                         value={editingData.dob}
                                         onChange={handleChange}
                                     />
-                                </div>
+                                </div>)}
                                 <div className="flex flex-wrap w-[600px] items-center">
                                     <label className="w-1/4 text-right p-4" htmlFor="email">Email:</label>
                                     <input
@@ -286,7 +356,7 @@ const ProfileEmployee = () => {
                                         onChange={handleChange}
                                     />
                                 </div>
-                                <div className="flex flex-wrap w-[600px] items-center">
+                                {checkRole && (<div className="flex flex-wrap w-[600px] items-center">
                                     <label className="w-1/4 text-right p-4" htmlFor="address">Address:</label>
                                     <input
                                         type="text"
@@ -296,27 +366,47 @@ const ProfileEmployee = () => {
                                         value={editingData.address}
                                         onChange={handleChange}
                                     />
-                                </div>
-                                <div className="flex flex-wrap w-[600px] items-center">
-                                    <label className="w-1/4 text-right p-4" htmlFor="department">Department:</label>
-                                    <select
-                                        id="department"
-                                        name="department"
-                                        className="w-3/4"
-                                        value={editingData.department}
-                                        onChange={handleChange}
-                                    >
-                                        <option value="" disabled>
-                                            {editingData.department || 'Select Department'}
-                                        </option>
-                                        {departmentList?.map(({ name, index }) => (
-                                            <option key={index} value={name}>
-                                                {name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="flex flex-wrap w-[600px] items-center">
+                                </div>)}
+                                {checkRole ? (
+                                    checkAdmin && (
+                                        <div className="flex flex-wrap w-[600px] items-center">
+                                            <label className="w-1/4 text-right p-4" htmlFor="department">
+                                                Department:
+                                            </label>
+                                            <select
+                                                id="department"
+                                                name="department"
+                                                className="w-3/4"
+                                                value={editingData.department}
+                                                onChange={handleChange}
+                                            >
+                                                <option value="" disabled>
+                                                    {editingData.department || 'Select Department'}
+                                                </option>
+                                                {departmentList?.map(({ name, index }) => (
+                                                    <option key={index} value={name}>
+                                                        {name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )
+                                ) : (
+                                    <div className="flex flex-wrap w-[600px] items-center">
+                                        <label className="w-1/4 text-right p-4" htmlFor="department">
+                                            Department:
+                                        </label>
+                                        <input
+                                            type="text"
+                                            id="department"
+                                            name="department"
+                                            className="w-3/4"
+                                            value={editingData.department}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                )}
+                                {checkAdmin && (checkRole ? (< div className="flex flex-wrap w-[600px] items-center">
                                     <label className="w-1/4 text-right p-4" htmlFor="department">Role:</label>
                                     <select
                                         id="role"
@@ -334,8 +424,114 @@ const ProfileEmployee = () => {
                                             </option>
                                         ))}
                                     </select>
-                                </div>
-                                <div className="flex flex-wrap w-[600px] items-center">
+                                </div>) : (<div className="flex flex-wrap w-[600px] items-center">
+                                    <label className="w-1/4 text-right p-4" htmlFor="department">Role:</label>
+                                    <input
+                                        type="text"
+                                        id="role"
+                                        name="role"
+                                        className="w-3/4"
+                                        value={editingData.role}
+                                        onChange={handleChange}
+                                    />
+                                </div>))}
+
+                                {checkInhaber && (checkRole ? (< div className="flex flex-wrap w-[600px] items-center">
+                                    <label className="w-1/4 text-right p-4" htmlFor="role">Role:</label>
+                                    <select
+                                        id="role"
+                                        name="role"
+                                        className="w-3/4"
+                                        value={editingData.role}
+                                        onChange={handleChange}
+                                    >
+                                        <option value="" disabled>
+                                            {editingData.role || 'Select Role'}
+                                        </option>
+                                        {roleListForInhaber?.map(({ name, index }) => (
+                                            <option key={index} value={name}>
+                                                {name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>) : (<div className="flex flex-wrap w-[600px] items-center">
+                                    <label className="w-1/4 text-right p-4" htmlFor="role">Role:</label>
+                                    <input
+                                        type="text"
+                                        id="role"
+                                        name="role"
+                                        className="w-3/4"
+                                        value={editingData.role}
+                                        onChange={handleChange}
+                                        readOnly={true}
+                                    />
+                                </div>))}
+
+                                {/* {checkRole ?
+                                    (checkAdmin && (< div className="flex flex-wrap w-[600px] items-center">
+                                        <label className="w-1/4 text-right p-4" htmlFor="department">Role:</label>
+                                        <select
+                                            id="role"
+                                            name="role"
+                                            className="w-3/4"
+                                            value={editingData.role}
+                                            onChange={handleChange}
+                                        >
+                                            <option value="" disabled>
+                                                {editingData.role || 'Select Role'}
+                                            </option>
+                                            {roleList?.map(({ name, index }) => (
+                                                <option key={index} value={name}>
+                                                    {name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>)) : (
+                                        <div className="flex flex-wrap w-[600px] items-center">
+                                            <label className="w-1/4 text-right p-4" htmlFor="department">Role:</label>
+                                            <input
+                                                type="text"
+                                                id="role"
+                                                name="role"
+                                                className="w-3/4"
+                                                value={editingData.role}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    )}
+                                {checkRole ?
+                                    (checkInhaber && (< div className="flex flex-wrap w-[600px] items-center">
+                                        <label className="w-1/4 text-right p-4" htmlFor="department">Role:</label>
+                                        <select
+                                            id="role"
+                                            name="role"
+                                            className="w-3/4"
+                                            value={editingData.role}
+                                            onChange={handleChange}
+                                        >
+                                            <option value="" disabled>
+                                                {editingData.role || 'Select Role'}
+                                            </option>
+                                            {roleListForInhaber?.map(({ name, index }) => (
+                                                <option key={index} value={name}>
+                                                    {name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>)) : (
+                                        <div className="flex flex-wrap w-[600px] items-center">
+                                            <label className="w-1/4 text-right p-4" htmlFor="department">Role:</label>
+                                            <input
+                                                type="text"
+                                                id="role"
+                                                name="role"
+                                                className="w-3/4"
+                                                value={editingData.role}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    )} */}
+                                {checkRole && (<div className="flex flex-wrap w-[600px] items-center">
                                     <label className="w-1/4 text-right p-4" htmlFor="department">Position:</label>
                                     <select
                                         id="position"
@@ -353,8 +549,8 @@ const ProfileEmployee = () => {
                                             </option>
                                         ))}
                                     </select>
-                                </div>
-                                <div className="flex flex-wrap w-[600px] items-center">
+                                </div>)}
+                                {checkRole && (<div className="flex flex-wrap w-[600px] items-center">
                                     <label className="w-1/4 text-right p-4" htmlFor="phone">Days Off (per year):</label>
                                     <input
                                         type="text"
@@ -364,7 +560,18 @@ const ProfileEmployee = () => {
                                         value={editingData.default_total_dayOff}
                                         onChange={handleChange}
                                     />
-                                </div>
+                                </div>)}
+                                {checkRole && (<div className="flex flex-wrap w-[600px] items-center">
+                                    <label className="w-1/4 text-right p-4" htmlFor="phone">House renting money:</label>
+                                    <input
+                                        type="text"
+                                        id="house_rent_money"
+                                        name="house_rent_money"
+                                        className="w-3/4"
+                                        value={editingData.house_rent_money}
+                                        onChange={handleChange}
+                                    />
+                                </div>)}
                                 <div className="flex flex-wrap w-[600px] items-center">
                                     <label className="w-1/4 text-right p-4" htmlFor="status">Status:</label>
                                     <input
@@ -376,21 +583,22 @@ const ProfileEmployee = () => {
                                         onChange={handleChange}
                                     />
                                 </div>
-                                <div className="flex flex-row w-full justify-center gap-6">
+                                {checkRole && (<div className="flex flex-row w-full justify-center gap-6">
                                     <button onClick={handleCancel} className="mt-10 w-1/3 bg-buttonColor1 text-white text-base flex flex-row gap-1 justify-center items-center border border-solid p-2 rounded-md hover:bg-cyan-800">
                                         Cancel
                                     </button>
                                     <button type="submit" className="mt-10 w-1/3 bg-buttonColor1 text-white text-base flex flex-row gap-1 justify-center items-center border border-solid p-2 rounded-md hover:bg-cyan-800">
                                         Save Changes
                                     </button>
-                                </div>
+                                </div>)}
                             </form>
                         </div>
-                    </div>)}
-                    {scheduleState && <ScheduleTable id={id} />}
-                </div>
+                    </div>)
+                    }
+                    {scheduleState && <ScheduleTable id={id} name={editingData.name} department={editingData.department} role={editingData.role} position={editingData.position} />}
+                </div >
             )}
-        </div>
+        </div >
     )
 }
 

@@ -1,10 +1,10 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { positionList } from "assets/data/data";
-import { roleList } from "assets/data/data";
+import { roleList, roleListForInhaber } from "assets/data/data";
 import EmployeeItem from "./EmployeeItem";
 import "./Employee.css"
-import axios from "axios";
+import axios, { all } from "axios";
 // import { response, response } from "express";
 function Employee() {
     document.title = "Employee";
@@ -19,17 +19,34 @@ function Employee() {
     const [addEmployee, setAddEmployee] = useState(false)
 
     const [loading, setLoading] = useState(false);
-    const [userList, setUserList] = useState([])
+    const [userList, setUserList] = useState()
 
     const [departmentList, setDepartmentList] = useState()
 
     const [selectedDepartmentEmployee, setSelectedDepartmentEmployee] = useState('');
     const [selectedPositionEmployee, setSelectedPositionEmployee] = useState('');
     const [selectedRoleUser, setSelectedRoleUser] = useState('');
-
+    const [allUsers, setAllUsers] = useState();
     const [inputSearch, setInputSearch] = useState("");
 
     const [positionFormMenuState, setPositionFormMenuState] = useState(false)
+
+    const [checkRole, setCheckRole] = useState(false)
+    const [checkInhaber, setCheckInhaber] = useState(false)
+    const [checkManager, setCheckManager] = useState(false)
+    const [checkAdmin, setCheckAdmin] = useState(false)
+
+    const PAGE_SIZE = 6
+    const [currentPage, setCurrentPage] = useState(1);
+    const indexOfLastItem = currentPage * PAGE_SIZE;
+    const indexOfFirstItem = indexOfLastItem - PAGE_SIZE;
+    const currentUsers = allUsers?.slice(indexOfFirstItem, indexOfLastItem);
+
+    const totalPages = Math.ceil(allUsers?.length / PAGE_SIZE);
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    };
 
     const [formData, setFormData] = useState({
         user: {
@@ -66,6 +83,33 @@ function Employee() {
             try {
                 const { data } = await axios.post(
                     "https://qr-code-checkin.vercel.app/api/auth/manage-admin/register-employee",
+                    {
+                        id: formData.user.id,
+                        name: formData.user.name,
+                        password: formData.user.password,
+                        email: formData.user.email,
+                        department_name: selectedDepartmentEmployee,
+                        role: "Employee",
+                        position: selectedPositionEmployee,
+                    },
+                    { withCredentials: true }
+                );
+
+                setTimeout(() => {
+                    window.location.reload();
+                }, 3000);
+            } catch (error) {
+                // Handle error
+                console.error("Error submitting form:", error);
+            } finally {
+                setLoading(false);
+            }
+        }
+        //CREATE EMPLOYEE BY INHABER
+        if (userObject.role === 'Inhaber' && selectedRoleUser === 'Employee') {
+            try {
+                const { data } = await axios.post(
+                    `https://qr-code-checkin.vercel.app/api/auth/manage-inhaber/register-employee?inhaber_name=${userObject?.name}`,
                     {
                         id: formData.user.id,
                         name: formData.user.name,
@@ -175,59 +219,76 @@ function Employee() {
         setSelectedRole(item)
     }
 
-    const SeacrhTyoe = async (query) => {
+    const SeacrhTyoe = async (department, details, role) => {
         if (userObject.role === 'Admin') {
             try {
-                const response = await axios.get(`https://qr-code-checkin.vercel.app/api/admin/manage-employee/get-specific?query=${query}`, { withCredentials: true });
-                console.log(query);
-                setUserList(response.data.message);
+                const response = await axios.get(`https://qr-code-checkin.vercel.app/api/admin/manage-all/search-specific?department=${department}&details=${details}&role=${role}`, { withCredentials: true });
+                // console.log(query);
+                setAllUsers(response.data.message);
             } catch (error) {
                 console.error('Error fetching data:', error);
             }
         }
+
     };
 
-    const handleSeacrh = () => {
-        if (inputSearch !== "" && selectedPosition === "Select Position" && selectedDepartment === "Select Department" && selectedRole === "Select Role") {
-            SeacrhTyoe(inputSearch)
+    const handleSeacrh = async () => {
+        if (userObject?.role === 'Admin') {
+            if (inputSearch !== "" && selectedDepartment === "Select Department" && selectedRole === "Select Role") {
+                SeacrhTyoe("", inputSearch, "")
+            }
+            if (inputSearch === "" && selectedDepartment !== "Select Department" && selectedRole === "Select Role") {
+                SeacrhTyoe(selectedDepartment, "", "")
+            }
+            if (inputSearch === "" && selectedDepartment === "Select Department" && selectedRole !== "Select Role") {
+                SeacrhTyoe("", "", selectedRole)
+            }
+            if (inputSearch !== "" && selectedDepartment !== "Select Department" && selectedRole !== "Select Role") {
+                SeacrhTyoe(selectedRole, selectedDepartment, inputSearch)
+            }
+            if (inputSearch === "" && selectedDepartment !== "Select Department" && selectedRole !== "Select Role") {
+                SeacrhTyoe(selectedDepartment,"", selectedRole)
+            }
+            if (inputSearch === "" && selectedDepartment === "Select Department" && selectedRole === "Select Role") {
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+            setTimeout(() => {
+                setSelectedDepartment("Select Department")
+                setSelectedRole("Select Role")
+                setSelectedPosition("Select Position")
+            }, 2000);
         }
-        if (inputSearch === "" && selectedPosition !== "Select Position" && selectedDepartment === "Select Department" && selectedRole === "Select Role") {
-            SeacrhTyoe(selectedPosition)
+
+        if (userObject.role === 'Inhaber') {
+            try {
+                const response = await axios.get(`https://qr-code-checkin.vercel.app/api/inhaber/manage-employee/get-specific?inhaber_name=${userObject.name}&query=${inputSearch}`, { withCredentials: true });
+                // console.log(query);
+                setAllUsers(response.data.message);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
         }
-        if (inputSearch === "" && selectedPosition === "Select Position" && selectedDepartment !== "Select Department" && selectedRole === "Select Role") {
-            SeacrhTyoe(selectedDepartment)
-        }
-        if (inputSearch === "" && selectedPosition === "Select Position" && selectedDepartment === "Select Department" && selectedRole !== "Select Role") {
-            SeacrhTyoe(selectedRole)
-        }
-        setTimeout(() => {
-            setSelectedDepartment("Select Department")
-            setSelectedRole("Select Role")
-            setSelectedPosition("Select Position")
-        }, 2000);
     }
 
     useEffect(() => {
         const getAllUsers = async () => {
             try {
                 if (userObject.role === 'Admin') {
-                    const response = await axios.get('https://qr-code-checkin.vercel.app/api/admin/manage-employee/get-all', { withCredentials: true });
+                    const response = await axios.get('https://qr-code-checkin.vercel.app/api/admin/manage-all/search-specific', { withCredentials: true });
                     setUserList(response.data.message);
                 }
                 if (userObject.role === 'Inhaber') {
                     // console.log("sdfs");
-                    const response = await axios.get('https://qr-code-checkin.vercel.app/api/inhaber/manage-employee/get-all',
-                        {
-                            inhaber_name: userObject.name
-                        }
-                        ,{ withCredentials: true }
+                    const response = await axios.get(`https://qr-code-checkin.vercel.app/api/inhaber/manage-employee/get-all?inhaber_name=${userObject.name}`, { withCredentials: true }
                     );
                     setUserList(response.data.message);
                 }
                 if (userObject.role === 'Manager') {
                     const response = await axios.get('https://qr-code-checkin.vercel.app/api/admin/manage-employee/get-all', {
                         manager_name: userObject.name
-                    },{ withCredentials: true });
+                    }, { withCredentials: true });
                     setUserList(response.data.message);
                 }
 
@@ -257,12 +318,34 @@ function Employee() {
         getAllDepartments()
     }, [selectedRoleUser, userObject?.role, userObject?.name]);
 
-    if (userList) {
-        console.log(userList);
-    }
+
+    useEffect(() => {
+        if (userObject?.role === 'Admin') {
+            if (userList) {
+                const combineArray = userList[0].concat(userList[1]);
+                setAllUsers(combineArray)
+            }
+            setCheckRole(true)
+            setCheckAdmin(true)
+            setCheckInhaber(false)
+            setCheckManager(false)
+        }
+
+        if (userObject?.role === 'Inhaber') {
+            if (userList) {
+                setAllUsers(userList)
+            }
+            setCheckRole(false)
+            setCheckAdmin(false)
+            setCheckInhaber(true)
+            setCheckManager(false)
+        }
+
+    }, [userList, userObject?.role])
+    console.log(allUsers);
     return (
         <>
-            <div className="relative ml-[260px] h-auto p-5 flex flex-col font-Changa text-textColor gap-5">
+            <div className="relative ml-[260px] h-auto p-5 flex flex-col font-Changa text-textColor gap-5 justify-center">
                 <div className="flex flex-row items-center justify-between">
                     <div>
                         <h1 className="font-bold text-3xl">Employees</h1>
@@ -282,17 +365,18 @@ function Employee() {
                         </button>
                     </div>
                 </div>
+                <div className="border border-solid border-t-[#6c757d]"></div>
 
                 {/* //---------------------------------------------------------------- SEARCH ----------------------------------------------------------------// */}
                 <div className="z-10 flex flex-row mt-10 justify-between h-[50px]">
                     <input
                         className="w-1/4 text-base px-4 py-3 placeholder:text-placeholderTextColor focus:border-2 focus:border-solid focus:border-placeholderTextColor focus:ring-0"
                         type="text"
-                        placeholder="Search by name, ID"
+                        placeholder="Search by name, ID, position"
                         value={inputSearch}
                         onChange={(e) => setInputSearch(e.target.value)}
                     />
-                    <div
+                    {checkRole && (<div
                         onClick={handleRoleMenu}
                         className="w-1/6 h-[50px] text-base cursor-pointer">
                         <div className="flex flex-col w-full py-3 px-2 border border-solid border-placeholderTextColor text-placeholderTextColor">
@@ -309,9 +393,9 @@ function Employee() {
                                 return <div onClick={() => handleChangeSelectedRole(name)} className="py-1">{name}</div>
                             })}
                         </div>)}
-                    </div>
+                    </div>)}
 
-                    <div
+                    {checkRole && (<div
                         onClick={handleDepartmetnnMenu}
                         className="w-1/6 h-[50px] text-base cursor-pointer">
                         <div className="flex flex-col w-full py-3 px-2 border border-solid border-placeholderTextColor text-placeholderTextColor">
@@ -328,9 +412,9 @@ function Employee() {
                                 return <div onClick={() => handleChangeSelectedDepartment(name)} className="py-1">{name}</div>
                             })}
                         </div>)}
-                    </div>
+                    </div>)}
 
-                    <div
+                    {/* <div
                         onClick={handlePositionMenu}
                         className="w-1/6 h-[50px] text-base cursor-pointer">
                         <div className="flex flex-col w-full py-3 px-2 border border-solid border-placeholderTextColor text-placeholderTextColor">
@@ -347,7 +431,7 @@ function Employee() {
                                 return <div onClick={() => handleChangeSelectedPosition(name)} className="py-1">{name}</div>
                             })}
                         </div>)}
-                    </div>
+                    </div> */}
                     <div
                         onClick={handleSeacrh}
                         className="bg-buttonColor2 text-white text-base flex flex-row gap-1 justify-center items-center border border-solid p-2 rounded-md cursor-pointer hover:bg-emerald-700 w-1/6">
@@ -383,11 +467,11 @@ function Employee() {
                                 </th>
                             </tr>
                         </thead>
-                        {Array.isArray(userList) && userList?.length === 0 ? (
-                            <div className="no-result-text">NO RESULT</div>
+                        {Array.isArray(currentUsers) && currentUsers?.length === 0 ? (
+                            <div className="no-result-text text-center">NO RESULT</div>
                         ) : (
                             <tbody className="tbody">
-                                {userList?.map(({ id, name, email, status, department_name, role, position }) => (
+                                {currentUsers?.map(({ id, name, email, status, department_name, role, position }) => (
                                     <EmployeeItem
                                         key={id}
                                         name={name}
@@ -397,13 +481,30 @@ function Employee() {
                                         department_name={department_name}
                                         role={role}
                                         position={position}
+                                        checkAdmin={checkAdmin}
+                                        checkInhaber={checkInhaber}
+                                        checkManager={checkManager}
                                     />
                                 ))}
-                            </tbody>
-                        )}
+                            </tbody>)}
                     </table>
                 </div>
-
+                <div className="flex justify-center">
+                    {totalPages > 1 && (
+                        <div className="flex flex-row gap-2">
+                            {Array.from({ length: totalPages }).map((_, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => handlePageChange(index + 1)}
+                                    className="text-xl border border-solid py-2 px-4 hover:bg-[#f6f6f6]"
+                                // className={`pagination-button ${currentPage === index + 1 ? 'active' : ''}`}
+                                >
+                                    {index + 1}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
                 {/* add Employee */}
                 {addEmployee && (<div className="fixed top-0 bottom-0 right-0 left-0 z-20 font-Changa">
                     <div
@@ -478,7 +579,7 @@ function Employee() {
                                                 onChange={handleChange}
                                             />
                                         </div>
-                                        <div className="w-full flex flex-col gap-2">
+                                        {checkAdmin && (<div className="w-full flex flex-col gap-2">
                                             <div className="flex flex-row gap-2">
                                                 <span className="text-rose-500">*</span>
                                                 <span className="">Department</span>
@@ -498,8 +599,8 @@ function Employee() {
                                                     </option>
                                                 ))}
                                             </select>
-                                        </div>
-                                        <div className="w-full flex flex-col gap-2">
+                                        </div>)}
+                                        {checkAdmin && (<div className="w-full flex flex-col gap-2">
                                             <div className="flex flex-row gap-2">
                                                 <span className="text-rose-500">*</span>
                                                 <span className="">Role</span>
@@ -519,7 +620,28 @@ function Employee() {
                                                     </option>
                                                 ))}
                                             </select>
-                                        </div>
+                                        </div>)}
+                                        {checkInhaber && (<div className="w-full flex flex-col gap-2">
+                                            <div className="flex flex-row gap-2">
+                                                <span className="text-rose-500">*</span>
+                                                <span className="">Role</span>
+                                            </div>
+                                            <select
+                                                id="role"
+                                                name="role"
+                                                className="w-full cursor-pointer"
+                                                value={selectedRoleUser}
+                                                onChange={(e) => setSelectedRoleUser(e.target.value)}
+                                                required
+                                            >
+                                                <option value="" disabled className='italic text-sm'>Select Role*</option>
+                                                {roleListForInhaber?.map((item, index) => (
+                                                    <option className='text-sm text-textColor w-full' key={index} value={item.name}>
+                                                        {item.name}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>)}
                                         {positionFormMenuState && (<div className="w-full flex flex-col gap-2">
                                             <div className="flex flex-row gap-2">
                                                 <span className="text-rose-500">*</span>
@@ -557,3 +679,4 @@ function Employee() {
 }
 
 export default Employee;
+
