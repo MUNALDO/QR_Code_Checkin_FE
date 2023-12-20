@@ -12,9 +12,7 @@ const ShiftItem = (props) => {
             </td>
             <td className="p-4 text-left">{code}</td>
             <td className="p-4 flex flex-row gap-3">
-                {time_slot?.detail?.map((item, index) => (
-                    <div key={index}>{item?.start_time}-{item?.end_time}</div>
-                ))}
+                <div>{time_slot.start_time}-{time_slot.end_time}</div>
             </td>
         </tr>
     );

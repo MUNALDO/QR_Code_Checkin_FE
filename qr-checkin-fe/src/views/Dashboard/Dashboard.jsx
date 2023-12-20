@@ -8,7 +8,11 @@ function Dashboard() {
     const [selectedDepartment, setSelectedDepartment] = useState("All Departments");
     const [departmentList, setDepartmentList] = useState()
     const [departmentMenu, setDepartmentMenu] = useState(false)
+
     const [currentDate, setCurrentDate] = useState("");
+    const [year, setYear] = useState()
+    const [month, setMonth] = useState()
+
     const [userListToday, setUserListToday] = useState()
     const handleDepartmentMenu = () => {
         setDepartmentMenu(!departmentMenu)
@@ -24,6 +28,8 @@ function Dashboard() {
         const month = (today.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-based
         const day = today.getDate().toString().padStart(2, '0');
         const formattedDate = `${month}/${day}/${year}`;
+        setYear(year)
+        setMonth(month)
         setCurrentDate(formattedDate);
     }, []); // empty dependency array to run only on mount
 
@@ -40,7 +46,7 @@ function Dashboard() {
         const getEmployeeByDateAndShift = async () => {
             if (currentDate) {
                 try {
-                    const response = await axios.get(`https://qr-code-checkin.vercel.app/api/admin/manage-employee/get-by-date?date=${currentDate}`, { withCredentials: true });
+                    const response = await axios.get(`https://qr-code-checkin.vercel.app/api/admin/manage-employee/get-all-schedules?year=${year}&month=${month}&date=${currentDate}`, { withCredentials: true });
                     setUserListToday(response.data.message);
                 } catch (error) {
                     console.error('Error fetching employees by date and shift:', error);
@@ -104,26 +110,29 @@ function Dashboard() {
                                             <span className="font-bold">Name</span>
                                         </th>
                                         <th className="p-2 text-left">
-                                            <span className="table-title-id">Employee ID</span>
-                                        </th>
-                                        <th className="p-2 text-left">
                                             <span className="table-title-role">Department</span>
                                         </th>
                                         <th className="p-2 text-left">
                                             <span className="table-title-role">Position</span>
                                         </th>
+                                        <th className="p-2 text-left">
+                                            <span className="table-title-role">Shift Code</span>
+                                        </th>
+                                        <th className="p-2 text-left">
+                                            <span className="table-title-role">Time</span>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody className="tbody">
-                                    {userListToday?.map(({ id, name, role, position, schedules, department_name }) => (
+                                    {userListToday?.map(({ employee_id, employee_name, shift_code, position, time_slot, department_name }) => (
                                         <EmployeeTodayItem
-                                            key={id}
-                                            name={name}
-                                            id={id}
+                                            key={employee_id}
+                                            employee_name={employee_name}
+                                            employee_id={employee_id}
                                             position={position}
-                                            schedules={schedules}
+                                            shift_code={shift_code}
                                             department_name={department_name}
-                                            role={role}
+                                            time_slot={time_slot}
                                         />
                                     ))}
                                 </tbody>

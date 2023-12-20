@@ -18,8 +18,8 @@ const ScheduleTable = (props) => {
     const [dateFormDb, setDateFormDb] = useState("")
     const [loading, setLoading] = useState(false);
     const [selectedShift, setSelectedShift] = useState(null);
-    const [positionTextState, setPositionTextState] = useState(false);
     const [attendanceDataByDate, setAttendanceDataByDate] = useState()
+    const [scheduleDataByDate, setScheduleDataByDate] = useState()
     const handleShiftClick = (shift) => {
         setSelectedShift(shift);
         console.log(shift);
@@ -29,33 +29,31 @@ const ScheduleTable = (props) => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await axios.get(`https://qr-code-checkin.vercel.app/api/admin/manage-date-design/get-all?employeeID=${id}`, { withCredentials: true });
+                const response = await axios.get(`https://qr-code-checkin.vercel.app/api/admin/manage-all/search-specific?details=${id}`, { withCredentials: true });
+                console.log(response.data);
                 setEmployeeData(response.data);
             } catch (error) {
                 console.error("Error fetching employee data:", error);
             }
         };
         fetchData();
-        if (role === "Employee") {
-            setPositionTextState(true);
-        }
 
-        const fetchAttendanceDataByDate = async () => {
+        const fetchScheduleDataByDate = async () => {
             try {
                 const year = selectedDate.substring(0, 4);
                 const month = selectedDate.substring(5, 7);
-                const date = dateFormDb
+                const day = selectedDate.substring(8, 10)
+                const date = `${month}/${day}/${year}`
+                const response = await axios.get(`https://qr-code-checkin.vercel.app/api/admin/manage-date-design/get-by-specific?employeeID=${id}&year=${year}&month=${month}&date=${date}`, { withCredentials: true });
 
-                const response = await axios.get(`https://qr-code-checkin.vercel.app/api/admin/manage-attendance/get-specific/${id}?year=${year}&month=${month}&date=${dateFormDb}`, { withCredentials: true });
-
-                setAttendanceDataByDate(response.data.message);
+                setScheduleDataByDate(response.data.message);
                 console.log("attendance", response.data);
             } catch (error) {
                 console.error("Error fetching employee data:", error);
             }
         };
 
-        fetchAttendanceDataByDate();
+        fetchScheduleDataByDate();
     }, [id, selectedDate, dateFormDb, role]);
 
     const renderTileContent = ({ date }) => {
@@ -67,21 +65,27 @@ const ScheduleTable = (props) => {
             year: "numeric",
         });
 
-        const shiftCodesForDate = employeeData.message
-            .filter((schedule) => {
+        const shiftCodesForDate = employeeData?.message[0]?.department
+            ?.filter((schedule) => {
                 const scheduleDate = new Date(schedule.date);
                 return scheduleDate.toDateString() === date.toDateString();
             })
-            .map((schedule) => schedule.shift_design.map((shift) => shift.shift_code))
+            .map((schedule) =>
+                schedule.shift_design.map((shift) => ({
+                    position: shift.position,
+                    shiftCode: shift.shift_code,
+                }))
+            )
             .flat();
+
         return (
-            <div className={`font-Changa calendar-tile ${shiftCodesForDate.length > 0 ? "scheduled" : ""}`}>
+            <div className={`font-Changa calendar-tile ${shiftCodesForDate?.length > 0 ? "scheduled" : ""}`}>
                 {/* You can customize the content of the tile here */}
-                {shiftCodesForDate.length > 0 ? (
-                    shiftCodesForDate.map((shiftCode, index) => (
-                        <div className="flex flex-row gap-2 border-solid border-2 border-textColor py-2 rounded-md mt-2 bg-slate-200 items-center">
+                {shiftCodesForDate?.length > 0 ? (
+                    shiftCodesForDate.map(({ position, shiftCode }, index) => (
+                        <div key={index} className="flex flex-row gap-2 border-solid border-2 border-textColor py-2 rounded-md mt-2 bg-slate-200 items-center">
                             <div className="border border-solid bg-red-800 ml-6 rounded-full w-3 h-3"></div>
-                            <div className="" key={index}>{shiftCode}</div>
+                            <div className="">{position}: {shiftCode}</div>
                         </div>
                     ))
                 ) : (
@@ -90,7 +94,6 @@ const ScheduleTable = (props) => {
             </div>
         );
     };
-
     const handleMonthChange = (date) => {
         setSelectedMonth(date);
     };
@@ -141,6 +144,7 @@ const ScheduleTable = (props) => {
     }
 
     const handleClickDay = (value, event) => {
+
         setFormState(true);
 
         const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -155,15 +159,15 @@ const ScheduleTable = (props) => {
         console.log("dateformDB", dateFormDb);
 
         setSelectedShift(null)
-
     };
 
-    const shiftForDate = employeeData?.message?.filter((item) => item?.date === dateFormDb);
-    console.log(shiftForDate);
+    // const shiftForDate = employeeData?.message?.department?.filter((item) => item?.schedule?.date === dateFormDb);
+    // console.log("shiftForDate",shiftForDate);
 
-    if (attendanceDataByDate) {
-        console.log(attendanceDataByDate);
-    }
+    // if (attendanceDataByDate) {
+    //     console.log(attendanceDataByDate);
+    // }
+
     return (
         <div className="flex flex-col justify-center items-center w-full gap-4 font-Changa text-textColor">
             <h2 className="text-2xl font-bold">Schedule Calendar</h2>
@@ -237,22 +241,23 @@ const ScheduleTable = (props) => {
                             {inforShiftFormState && (<div className="flex flex-col px-8 w-full mt-7 gap-2 font-Changa text-textColor">
                                 <div className="font-bold text-2xl">Shift Information</div>
                                 <div className="flex flex-row gap-3">
-                                    {shiftForDate?.map((item) => (
+                                    {scheduleDataByDate?.map((item, index) => (
                                         <div key={item._id} className="flex flex-row gap-4">
-                                            {item.shift_design?.map((shift) => (
-                                                <span className={`cursor-pointer ${selectedShift === shift.shift_code ? 'text-buttonColor1 underline decoration-buttonColor1' : ''
-                                                    }`} onClick={() => handleShiftClick(shift?.shift_code)} key={shift._id}>{shift.shift_code}</span>
-                                            ))}
+                                            {/* {item.shift_design?.map((shift) => ( */}
+                                            <span className={`cursor-pointer ${selectedShift === item.shift_code ? 'text-buttonColor1 underline decoration-buttonColor1' : ''
+                                                }`} onClick={() => handleShiftClick(item?.shift_code)} key={index}>{item?.shift_code}</span>
+                                            {/* ))} */}
                                         </div>
                                     ))}
                                 </div>
                                 {selectedShift && (
                                     <div>
-                                        {attendanceDataByDate
-                                            ?.filter((item) => item?.shift_info.shift_code === selectedShift)
+                                        {scheduleDataByDate
+                                            ?.filter((item) => item?.shift_code === selectedShift)
                                             .map((filteredItem) => (
                                                 <div key={filteredItem._id}>
-                                                    {filteredItem?.status === "checked" ? (
+                                                    {/* {filteredItem?.status === "checked" ? ( */}
+                                                    <div className="flex flex-col gap-4">
                                                         <div className="flex flex-row justify-between mt-5">
                                                             <div className="flex flex-col justify-center items-center text-buttonColor2 font-bold text-xl">
                                                                 <div>CHECKIN TIME</div>
@@ -267,15 +272,68 @@ const ScheduleTable = (props) => {
                                                                 <div>{filteredItem?.shift_info?.time_slot?.check_out_time}</div>
                                                             </div>
                                                         </div>
-                                                    ) : (
+                                                        {filteredItem?.total_km !== 0 ? (<div className="flex flex-row justify-between mt-5">
+                                                            <div className="flex flex-col justify-center items-center text-buttonColor2 font-bold text-xl">
+                                                                <div>CHECKIN KM</div>
+                                                                <div>{filteredItem?.check_in_km}</div>
+                                                            </div>
+                                                            <div className="flex flex-col justify-center items-center text-buttonColor1 font-bold text-xl">
+                                                                <div>TOTAL KM TIME</div>
+                                                                <div>{filteredItem?.total_km}</div>
+                                                            </div>
+                                                            <div className="flex flex-col justify-center items-center font-bold text-red-600 text-xl">
+                                                                <div>CHECKOUT KM</div>
+                                                                <div>{filteredItem?.check_out_km}</div>
+                                                            </div>
+                                                        </div>) : (<div></div>)}
+                                                    </div>
+                                                    {/* ) : (
                                                         <div className="text-center font-bold text-red-600 text-xl" key={filteredItem._id}>STATUS: MISSING</div>
-                                                    )}
+                                                    )} */}
                                                 </div>
                                             ))}
                                     </div>
                                 )}
                                 <div className="w-full border border-solid border-t-[rgba(0,0,0,.10)] mt-4"></div>
-                                {selectedShift && (<div className="w-full flex flex-col justify-center items-center gap-3 mt-3 text-base">
+                                {selectedShift && (
+                                    <div>
+                                        {scheduleDataByDate
+                                            ?.filter((item) => item?.shift_code === selectedShift)
+                                            .map((filteredItem) => (
+                                                <div className="w-full flex flex-col justify-center items-center gap-3 mt-3 text-base">
+                                                    <div className="flex flex-wrap w-full items-center justify-center">
+                                                        <span className="text-[#6c757d] w-1/3 text-right px-3">Employee's Name</span>
+                                                        <span className="w-2/3">{name}</span>
+                                                    </div>
+                                                    <div className="flex flex-wrap w-full items-center justify-center">
+                                                        <span className="text-[#6c757d] w-1/3 text-right px-3">Employee's ID</span>
+                                                        <span className="w-2/3">{id}</span>
+                                                    </div>
+                                                    <div className="flex flex-wrap w-full items-center justify-center">
+                                                        <span className="text-[#6c757d] w-1/3 text-right px-3">Department</span>
+                                                        <span className="w-2/3">{filteredItem?.department_name}</span>
+                                                    </div>
+                                                    <div className="flex flex-wrap w-full items-center justify-center">
+                                                        <span className="text-[#6c757d] w-1/3 text-right px-3">Role</span>
+                                                        <span className="w-2/3">{role}</span>
+                                                    </div>
+                                                    <div className="flex flex-wrap w-full items-center justify-center">
+                                                        <span className="text-[#6c757d] w-1/3 text-right px-3">Position</span>
+                                                        <span className="w-2/3">{filteredItem?.position}</span>
+                                                    </div>
+                                                    <div className="flex flex-wrap w-full items-center justify-center">
+                                                        <span className="text-[#6c757d] w-1/3 text-right px-3">Date</span>
+                                                        <span className="w-2/3">{selectedDate.substring(0, 10)}</span>
+                                                    </div>
+                                                    <div className="flex flex-wrap w-full items-center justify-center">
+                                                        <span className="text-[#6c757d] w-1/3 text-right px-3">Shift's Code</span>
+                                                        <span className="w-2/3">{selectedShift}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                    </div>
+                                )}
+                                {/* {selectedShift && (<div className="w-full flex flex-col justify-center items-center gap-3 mt-3 text-base">
                                     <div className="flex flex-wrap w-full items-center justify-center">
                                         <span className="text-[#6c757d] w-1/3 text-right px-3">Employee's Name</span>
                                         <span className="w-2/3">{name}</span>
@@ -304,7 +362,7 @@ const ScheduleTable = (props) => {
                                         <span className="text-[#6c757d] w-1/3 text-right px-3">Shift's Code</span>
                                         <span className="w-2/3">{selectedShift}</span>
                                     </div>
-                                </div>)}
+                                </div>)} */}
                             </div>)}
                         </div>
                     </div>

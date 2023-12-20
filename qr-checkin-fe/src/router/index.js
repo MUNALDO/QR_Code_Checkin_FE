@@ -16,7 +16,7 @@ import Unauthorized from "components/Unauthorized";
 import Missing from "components/Missing";
 import DayOffManagement from "views/Attendance/DayOffManagement/DayOffManagement";
 import SalarySummarize from "views/Salary/SalarySummarize";
-import SalaryCounting from "views/Salary/SalaryCounting";
+import SalaryEmployee from "views/Salary/SalaryEmployee";
 
 const titles = {
     '/': 'QR Checkin',
@@ -56,7 +56,7 @@ const Router = () => {
                     <Route path="working-schedule" element={<WorkingSchedule />} />
                     <Route path="working-schedule/day-off-management" element={<DayOffManagement />} />
                     <Route path="salary/summarize" element={<SalarySummarize />} />
-                    <Route path="salary/counting" element={<SalaryCounting />} />
+                    <Route path="salary/sumarize/:employeeId" element={<SalaryEmployee />} />
                     {/* <Route path="employee/add-employee" element={<AddEmployee />} /> */}
                 {/* </Route> */}
 
@@ -70,3 +70,4 @@ const Router = () => {
 };
 
 export default Router;
+

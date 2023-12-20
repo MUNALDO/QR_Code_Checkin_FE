@@ -6,10 +6,27 @@ import DayOffItem from "./DayOffItem";
 const DayOffManagement = () => {
     const [requestList, setRequestList] = useState()
     const [requestModal, setRequestModal] = useState(false)
-    const handleRequest = (answer_status) => {
+    const [requestId, setRequestId] = useState()
+    const handleRequest = (answer_status, requestId) => {
         console.log(answer_status);
         if (answer_status === "pending") {
+            setRequestModal(true);
+            setRequestId(requestId);
+        }
+    };
+
+    const handleApproveRequest = async () => {
+        try {
+            // Make a PUT request to update the answer_status to "approved"
+            await axios.put(`https://qr-code-checkin.vercel.app/api/admin/manage-request/handle/${requestId}`, 
+            {
+                answer_status: "approved"
+            }, 
+            { withCredentials: true });
+            // After successfully updating, close the modal and fetch the updated data
             setRequestModal(false);
+        } catch (error) {
+            console.error('Error approving request:', error);
         }
     };
 
@@ -59,6 +76,12 @@ const DayOffManagement = () => {
                                         <span className="table-title-id">Employee ID</span>
                                     </th>
                                     <th className="p-2 text-left">
+                                        <span className="table-title-role">From</span>
+                                    </th>
+                                    <th className="p-2 text-left">
+                                        <span className="table-title-role">To</span>
+                                    </th>
+                                    <th className="p-2 text-left">
                                         <span className="table-title-role">Reason</span>
                                     </th>
                                     <th className="p-2 text-left">
@@ -67,7 +90,7 @@ const DayOffManagement = () => {
                                 </tr>
                             </thead>
                             <tbody className="tbody">
-                                {requestList?.map(({ employee_id, employee_name, answer_status, request_content }) => (
+                                {requestList?.map(({ _id, employee_id, employee_name, answer_status, request_content, request_dayOff_start, request_dayOff_end }) => (
                                     <tr className="tr-item">
                                         <td className="p-2 hover:text-buttonColor2">
                                             <h2 className="text-left">
@@ -79,8 +102,10 @@ const DayOffManagement = () => {
                                             </h2>
                                         </td>
                                         <td className="p-2">{employee_id}</td>
+                                        <td className="p-2">{request_dayOff_start.substring(0,10)}</td>
+                                        <td className="p-2">{request_dayOff_end.substring(0,10)}</td>
                                         <td className="p-2">{request_content}</td>
-                                        <td className="p-2 cursor-pointer hover:text-buttonColor2" onClick={() => handleRequest(answer_status)}>{answer_status}</td>
+                                        <td className="p-2 cursor-pointer hover:text-buttonColor2" onClick={() => handleRequest(answer_status, _id)}>{answer_status}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -105,8 +130,8 @@ const DayOffManagement = () => {
                             <div className="flex flex-col px-8 w-full mt-7 font-Changa justify-center items-center gap-4">
                                 <span>Are you sure to approve this request?</span>
                                 <div className="flex flex-row gap-3">
-                                    <button type="button" className="w-[100px] bg-rose-800 text-white text-base flex flex-row gap-1 justify-center items-center border border-solid px-2 py-1 rounded-md cursor-pointe">No</button>
-                                    <button type="button" className="w-[100px] bg-buttonColor2 text-white text-base flex flex-row gap-1 justify-center items-center border border-solid px-2 py-1 rounded-md cursor-pointer">Yes</button>
+                                    <button onClick={() => setRequestModal(false)} type="button" className="w-[100px] bg-rose-800 text-white text-base flex flex-row gap-1 justify-center items-center border border-solid px-2 py-1 rounded-md cursor-pointe">No</button>
+                                    <button onClick={handleApproveRequest} type="button" className="w-[100px] bg-buttonColor2 text-white text-base flex flex-row gap-1 justify-center items-center border border-solid px-2 py-1 rounded-md cursor-pointer">Yes</button>
                                 </div>
                             </div>
                         </div>

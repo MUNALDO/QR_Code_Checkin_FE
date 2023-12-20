@@ -63,15 +63,8 @@ const WorkingSchedule = () => {
             code: formData.code,
             name: formData.name,
             time_slot: {
-                total_number: formData.total_number,
-                time_check: formData.time_check,
-                detail: [
-                    {
-                        number: 1,
-                        start_time: formData.start_time,
-                        end_time: formData.end_time,
-                    },
-                ],
+                start_time: formData.start_time,
+                end_time: formData.end_time,
             },
         };
         setLoading(true);
@@ -79,9 +72,9 @@ const WorkingSchedule = () => {
         if (userObject?.role === "Admin") {
             try {
                 const { data } = await axios.post('https://qr-code-checkin.vercel.app/api/admin/manage-shift/create', shiftData, { withCredentials: true })
-                setTimeout(() => {
-                    window.location.reload();
-                }, 3000);
+                // setTimeout(() => {
+                //     window.location.reload();
+                // }, 3000);
             } catch (error) {
                 // Handle error
                 console.error("Error submitting form:", error);

@@ -101,11 +101,11 @@ const SalarySummarizie = () => {
                     </div>
                 </div>
                 <div className="flex flex-row px-4 gap-4">
-                        <button onClick={() => setSalaryCountingFormState(!salaryCountingFormState)} className="bg-buttonColor1 text-white text-base flex flex-row gap-1 justify-center items-center border border-solid p-2 rounded-md hover:bg-cyan-800">
-                            <svg style={{ width: '14px', height: '16px' }} aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" class="svg-inline--fa fa-plus " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path></svg>
-                            Salary Counting
-                        </button>
-                    </div>
+                    <button onClick={() => setSalaryCountingFormState(!salaryCountingFormState)} className="bg-buttonColor1 text-white text-base flex flex-row gap-1 justify-center items-center border border-solid p-2 rounded-md hover:bg-cyan-800">
+                        <svg style={{ width: '14px', height: '16px' }} aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" class="svg-inline--fa fa-plus " role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"></path></svg>
+                        Salary Counting
+                    </button>
+                </div>
             </div>
             <div className="border border-solid border-t-[#6c757d]"></div>
 
@@ -168,6 +168,9 @@ const SalarySummarizie = () => {
                                 <span className="table-title-status">d_parameter</span>
                             </th>
                             <th className="p-2 text-left">
+                                <span className="table-title-status">Total Km</span>
+                            </th>
+                            <th className="p-2 text-left">
                                 <span className="table-title-status">Salary</span>
                             </th>
                         </tr>
@@ -180,7 +183,7 @@ const SalarySummarizie = () => {
                                 <tr className="tr-item" key={employee_id}>
                                     <td className="p-2 hover:text-buttonColor2">
                                         <h2 className="text-left">
-                                            <Link className="cursor-pointer flex flex-col" to={`/employee/view-profile/${employee_id}`}>{employee_name}
+                                            <Link className="cursor-pointer flex flex-col" to={`/salary/sumarize/${employee_id}`}>{employee_name}
                                                 <span className="text-xs text-neutral-400">{role}</span>
                                             </Link>
                                         </h2>
@@ -194,6 +197,7 @@ const SalarySummarizie = () => {
                                     <td className="p-2">{salary?.b_parameter}</td>
                                     <td className="p-2">{salary?.c_parameter}</td>
                                     <td className="p-2">{salary?.d_parameter}</td>
+                                    <td className="p-2">{salary?.total_km}</td>
                                     <td className="p-2">{salary?.total_salary}</td>
                                 </tr>
                             ))}

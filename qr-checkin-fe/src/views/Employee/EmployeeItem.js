@@ -1,8 +1,16 @@
 import "./EmployeeItem.css"
 import { Link } from "react-router-dom"
+import { useState, useEffect } from "react"
 import IconActice from "../../assets/images/icon-active.png"
 const EmployeeItem = (props) => {
-    const { id, name, email, status, department_name, role, position } = props
+    const { id, name, email, status, department, department_name, role, position } = props
+    const [checkRole, setCheckRole] = useState(false)
+
+    useEffect(() => {
+        if (role === "Employee") {
+            setCheckRole(true)
+        }
+    }, [])
     return (
         <tr className="tr-item">
             <td className="p-2 hover:text-buttonColor2">
@@ -17,10 +25,16 @@ const EmployeeItem = (props) => {
             </td>
             <td className="p-2">{id}</td>
             <td className="p-2">{email}</td>
-            <td className="p-2">{department_name}</td>
             <td className="p-2">{role}</td>
-            <td className="p-2">{position}</td>
-            <td className="p-2 flex gap-2 items-center w-full h-full mt-2">
+            {checkRole ? (<td className="p-2 flex flex-col gap-2">
+                {department?.map(({ name, position }) => <div>{name} </div>)}
+            </td>) : (<td className="p-2 flex flex-row gap-2">{department_name}</td>)}
+            <td className="p-2"></td>
+            {checkRole ? (<td className="p-2 flex flex-col gap-2">
+                {department?.map(({ position }) => <div>{position?.join(", ")} </div>)}
+            </td>) : (<td className="p-2 flex flex-row gap-2"></td>)}
+            <td className="p-2"></td>
+            <td className="p-2 flex flex-row gap-2 items-center w-full h-full mt-2">
                 <img className="w-4 h-4" src={IconActice} />
                 <span className="text-buttonColor2">{status}</span>
             </td>
